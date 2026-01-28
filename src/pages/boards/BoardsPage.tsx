@@ -1,0 +1,194 @@
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Plus, Filter, Linkedin, Youtube, Instagram, GraduationCap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { KanbanBoard } from '@/components/kanban/kanban-board'
+import { usePostsStore } from '@/lib/store'
+import { PLATFORMS, PLATFORM_ORDER } from '@/lib/constants'
+import type { Post, WorkflowStatusId, PlatformId, LinkedInPost, YouTubePost, InstagramPost, SkoolPost } from '@/lib/types'
+import { cn } from '@/lib/utils'
+
+const platformIcons = {
+  linkedin: Linkedin,
+  youtube: Youtube,
+  instagram: Instagram,
+  skool: GraduationCap
+}
+
+const platformLabels = {
+  linkedin: { singular: 'Post', plural: 'Posts' },
+  youtube: { singular: 'Video', plural: 'Videos' },
+  instagram: { singular: 'Post', plural: 'Posts' },
+  skool: { singular: 'Post', plural: 'Posts' }
+}
+
+export function BoardsPage() {
+  const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const currentPlatform = (searchParams.get('platform') as PlatformId) || 'linkedin'
+  
+  // Get posts from global store
+  const allPosts = usePostsStore((state) => state.posts)
+  const updatePost = usePostsStore((state) => state.updatePost)
+  const addPost = usePostsStore((state) => state.addPost)
+  const deletePost = usePostsStore((state) => state.deletePost)
+  
+  // Filter posts by current platform
+  const posts = allPosts.filter(p => p.platform === currentPlatform)
+
+  const handlePlatformChange = (platform: PlatformId) => {
+    setSearchParams({ platform })
+  }
+
+  const handlePostClick = (post: Post) => {
+    navigate(`/boards/${post.platform}/${post.id}`)
+  }
+
+  const handlePostsChange = (updatedPosts: Post[]) => {
+    // Find which posts changed and update them in the store
+    updatedPosts.forEach(updatedPost => {
+      const originalPost = allPosts.find(p => p.id === updatedPost.id)
+      if (!originalPost || JSON.stringify(originalPost) !== JSON.stringify(updatedPost)) {
+        updatePost(updatedPost.id, updatedPost)
+      }
+    })
+    
+    // Check for new posts (duplicates)
+    updatedPosts.forEach(post => {
+      if (!allPosts.find(p => p.id === post.id)) {
+        addPost(post)
+      }
+    })
+  }
+
+  const handleNewPost = (status: WorkflowStatusId) => {
+    const id = `${currentPlatform.slice(0, 2)}-new-${Date.now()}`
+    let newPost: Post
+    
+    switch (currentPlatform) {
+      case 'linkedin':
+        newPost = {
+          id,
+          platform: 'linkedin',
+          status,
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          content: { text: '' }
+        } as LinkedInPost
+        break
+      case 'youtube':
+        newPost = {
+          id,
+          platform: 'youtube',
+          status,
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          content: { title: '', description: '', isShort: false }
+        } as YouTubePost
+        break
+      case 'instagram':
+        newPost = {
+          id,
+          platform: 'instagram',
+          status,
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          content: { caption: '', type: 'post' }
+        } as InstagramPost
+        break
+      case 'skool':
+        newPost = {
+          id,
+          platform: 'skool',
+          status,
+          tags: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          content: { title: '', body: '' }
+        } as SkoolPost
+        break
+      default:
+        return
+    }
+    
+    addPost(newPost)
+    navigate(`/boards/${currentPlatform}/${id}`)
+  }
+
+  const handleDeletePost = (postId: string) => {
+    deletePost(postId)
+  }
+  const platformData = PLATFORMS[currentPlatform]
+  const Icon = platformIcons[currentPlatform]
+  const labels = platformLabels[currentPlatform]
+
+  return (
+    <div className="flex flex-col h-[calc(100vh-140px)]">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div 
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ backgroundColor: platformData.color }}
+          >
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-[22px] font-medium text-gray-900">Content Boards</h1>
+            <p className="text-[13px] text-gray-400">{posts.length} {labels.plural}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </Button>
+          <Button size="sm" onClick={() => handleNewPost('idea')}>
+            <Plus className="h-4 w-4 mr-2" />
+            {labels.singular} erstellen
+          </Button>
+        </div>
+      </div>
+
+      {/* Platform Selector */}
+      <div className="flex gap-2 mb-4">
+        {PLATFORM_ORDER.map((platform) => {
+          const PlatformIcon = platformIcons[platform]
+          const isActive = platform === currentPlatform
+          const pData = PLATFORMS[platform]
+          
+          return (
+            <button
+              key={platform}
+              onClick={() => handlePlatformChange(platform)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all",
+                isActive 
+                  ? "text-white shadow-sm" 
+                  : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
+              )}
+              style={isActive ? { backgroundColor: pData.color } : undefined}
+            >
+              <PlatformIcon className="h-4 w-4" />
+              {pData.name}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Kanban Board */}
+      <div className="flex-1 min-h-0">
+        <KanbanBoard
+          posts={posts}
+          platform={currentPlatform}
+          onPostsChange={handlePostsChange}
+          onPostClick={handlePostClick}
+          onNewPost={handleNewPost}
+          onDeletePost={handleDeletePost}
+        />
+      </div>
+    </div>
+  )
+}
