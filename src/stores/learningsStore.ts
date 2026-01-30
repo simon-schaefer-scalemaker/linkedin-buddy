@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { PostLearning, PerformancePattern, PlatformId } from '@/lib/types'
+import { storeLearningMemory } from '@/lib/eugene-memory'
 
 interface LearningsState {
   learnings: PostLearning[]
@@ -40,6 +41,21 @@ export const useLearningsStore = create<LearningsState>()(
         set((state) => ({
           learnings: [...state.learnings, newLearning]
         }))
+        
+        // Store in Eugene's memory (async, don't block)
+        if (newLearning.keyInsight) {
+          storeLearningMemory({
+            id: newLearning.id,
+            postId: newLearning.postId,
+            platform: newLearning.platform,
+            keyInsight: newLearning.keyInsight,
+            whatWorked: newLearning.whatWorked,
+            whatDidntWork: newLearning.whatDidntWork,
+            applyToFuture: newLearning.applyToFuture,
+            outcome: newLearning.outcome
+          }).catch(() => {}) // Silent fail
+        }
+        
         return id
       },
       

@@ -82,8 +82,8 @@ export function KanbanBoard({
         updates.publishedAt = new Date().toISOString()
       }
       
-      // Set scheduledFor when moving to scheduled (if not already set)
-      if (newStatus === 'scheduled' && !post.scheduledFor) {
+      // Set scheduledFor when moving to planned (if not already set)
+      if (newStatus === 'planned' && !post.scheduledFor) {
         updates.scheduledFor = new Date().toISOString()
       }
       
@@ -137,7 +137,7 @@ export function KanbanBoard({
     const newPost: Post = {
       ...post,
       id: `${post.id}-copy-${Date.now()}`,
-      status: 'draft',
+      status: 'idea',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       publishedAt: undefined,
@@ -154,7 +154,7 @@ export function KanbanBoard({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-3 h-full">
+      <div className="flex gap-2 h-full">
         {KANBAN_COLUMNS.map(status => (
           <KanbanColumn
             key={status}

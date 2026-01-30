@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { 
   ArrowLeft, 
@@ -22,7 +22,11 @@ import {
   ChevronRight,
   ChevronDown,
   Target,
-  Package
+  Package,
+  Send,
+  Bot,
+  User,
+  CornerDownLeft
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -31,11 +35,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { PostSidebar } from './post-sidebar'
 import { AiChatPanel } from './ai-chat-panel'
 import { usePostsStore, useTemplatesStore, useCutterSharesStore, useGlobalSettingsStore, type TemplateCategory, type Template } from '@/lib/store'
+import { useChatStore } from '@/stores/chatStore'
 import type { LinkedInPost, WorkflowStatusId, ContentTagId, HookType, ContentTopic, ContentFormat } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { uploadVideo, validateVideoFile, isSupabaseConfigured } from '@/lib/video-upload'
-import { sendMessage, isApiConfigured } from '@/lib/claude-api'
-import { buildHypothesisPrompt, buildLearningPrompt } from '@/lib/ai-prompts'
+import { sendMessage, isApiConfigured, chatMessagesToClaudeMessages } from '@/lib/claude-api'
+import { buildHypothesisPrompt, buildLearningPrompt, buildSystemPrompt, buildEnhancedSystemPrompt } from '@/lib/ai-prompts'
+import { analyzeWritingStyle } from '@/lib/style-analyzer'
+import { storePostMemory, storeConversationMemory } from '@/lib/eugene-memory'
 
 // Workflow Step IDs
 type StepId = 'strategy' | 'content' | 'assets'
@@ -83,8 +90,7 @@ function WorkflowSection({
         // Light mode
         isOpen ? "border-neutral-300 bg-white shadow-lg" : "border-neutral-200 bg-neutral-50",
         // Dark mode
-        isOpen ? "dark:border-neutral-600 dark:bg-neutral-800" : "dark:border-neutral-800 dark:bg-neutral-800/30",
-        isComplete && !isOpen && "border-green-500/30 bg-green-50 dark:border-green-500/30 dark:bg-green-500/10"
+        isOpen ? "dark:border-neutral-600 dark:bg-neutral-800" : "dark:border-neutral-700 dark:bg-neutral-800/50"
       )}
     >
       {/* Clickable Header */}
@@ -98,13 +104,13 @@ function WorkflowSection({
       >
         {/* Status Icon */}
         <div className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-          isOpen && "bg-neutral-900 text-white dark:bg-neutral-700",
-          !isOpen && isComplete && "bg-green-500 text-white",
-          !isOpen && !isComplete && "bg-neutral-200 text-neutral-500 dark:bg-neutral-700"
+          "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all",
+          isOpen && "bg-neutral-900 text-white dark:bg-neutral-600",
+          !isOpen && isComplete && "bg-gradient-to-br from-emerald-400 to-teal-500 text-white shadow-md shadow-emerald-500/20",
+          !isOpen && !isComplete && "bg-neutral-200 text-neutral-400 dark:bg-neutral-700 dark:text-neutral-500"
         )}>
           {isComplete && !isOpen ? (
-            <Check className="h-4 w-4" />
+            <Check className="h-4 w-4" strokeWidth={2.5} />
           ) : (
             <Icon className="h-4 w-4" />
           )}
@@ -115,7 +121,7 @@ function WorkflowSection({
           <div className="flex items-center gap-2">
             <span className={cn(
               "font-semibold text-[13px] uppercase tracking-wide",
-              isOpen ? "text-neutral-900 dark:text-white" : isComplete ? "text-green-700" : "text-neutral-500"
+              isOpen ? "text-neutral-900 dark:text-white" : "text-neutral-600 dark:text-neutral-300"
             )}>
               {title}
             </span>
@@ -129,8 +135,8 @@ function WorkflowSection({
           {/* Preview when collapsed */}
           {!isOpen && (
             <p className={cn(
-              "text-[11px] mt-1 truncate max-w-[500px]",
-              isComplete ? "text-green-600" : "text-neutral-500 italic"
+              "text-[11px] mt-1 truncate max-w-[500px] text-neutral-500 dark:text-neutral-400",
+              !isComplete && "italic"
             )}>
               {preview || (isComplete ? "Ausgefüllt" : "Noch nicht ausgefüllt")}
             </p>
@@ -148,7 +154,7 @@ function WorkflowSection({
       
       {/* Collapsible Content */}
       {isOpen && (
-        <div className="p-5 space-y-5 bg-[#191919] text-neutral-200 rounded-b-xl">
+        <div className="p-5 space-y-5 bg-[#191919] text-neutral-200 rounded-b-xl overflow-hidden">
           {children}
           
           {/* Next Step Button */}
@@ -390,6 +396,141 @@ Simon`)
     setResourceTemplate: setGlobalResourceTemplate
   } = useGlobalSettingsStore()
   
+  // Inline Chat for post generation
+  const [chatInput, setChatInput] = useState('')
+  const [isChatLoading, setIsChatLoading] = useState(false)
+  const [chatError, setChatError] = useState<string | null>(null)
+  const chatScrollRef = useRef<HTMLDivElement>(null)
+  const chatInputRef = useRef<HTMLTextAreaElement>(null)
+  
+  // Chat store for inline chat (use post-specific chat)
+  const chatId = `content-${post?.id || 'new'}`
+  const chatMessages = useChatStore((state) => state.getChat(chatId))
+  const addChatMessage = useChatStore((state) => state.addMessage)
+  const clearChatMessages = useChatStore((state) => state.clearChat)
+  const startAssistantMessage = useChatStore((state) => state.startAssistantMessage)
+  const updateLastAssistantMessage = useChatStore((state) => state.updateLastAssistantMessage)
+  
+  // Scroll chat to bottom
+  useEffect(() => {
+    if (chatScrollRef.current) {
+      chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight
+    }
+  }, [chatMessages])
+  
+  // Build context for AI from current form data
+  const buildContentContext = () => {
+    let context = ''
+    if (idea) context += `**Idee:** ${idea}\n`
+    if (hypothesis) context += `**Hypothese:** ${hypothesis}\n`
+    if (loomBulletpoints.length > 0) {
+      context += `**Loom Bulletpoints:**\n${loomBulletpoints.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n`
+    }
+    if (hookType) context += `**Hook-Typ:** ${hookType}\n`
+    if (topic) context += `**Thema:** ${topic}\n`
+    return context
+  }
+  
+  // Send chat message
+  const handleChatSend = async () => {
+    if (!chatInput.trim() || isChatLoading) return
+    
+    const userMessage = chatInput.trim()
+    setChatInput('')
+    setChatError(null)
+    
+    // Add user message
+    addChatMessage(chatId, { role: 'user', content: userMessage })
+    
+    // Store user message in Eugene's memory (async, don't wait)
+    storeConversationMemory({
+      context_type: 'post_creation',
+      context_id: post?.id,
+      role: 'user',
+      content: userMessage
+    }).catch(() => {}) // Silent fail
+    
+    setIsChatLoading(true)
+    startAssistantMessage(chatId)
+    
+    try {
+      // Build context for current post
+      const contentContext = buildContentContext()
+      const currentContent = getFullPostText()
+      
+      // Try enhanced system prompt with semantic search, fallback to basic
+      let systemPrompt: string
+      try {
+        systemPrompt = await buildEnhancedSystemPrompt(
+          'linkedin',
+          allPosts,
+          post,
+          idea || hypothesis, // Use idea or hypothesis for semantic search
+          currentContent
+        )
+      } catch {
+        // Fallback to basic prompt
+        systemPrompt = buildSystemPrompt('linkedin', allPosts, post)
+      }
+      
+      const enhancedSystemPrompt = `${systemPrompt}
+
+# AKTUELLER POST-KONTEXT
+Der User arbeitet gerade an folgendem Post:
+${contentContext}
+
+# DEINE AUFGABE
+- Hilf dem User, einen LinkedIn Post zu schreiben
+- Nutze seinen Schreibstil aus den analysierten Winner-Posts
+- Berücksichtige die Idee, Hypothese und Loom Bulletpoints
+- Wenn du einen Post generierst, schreibe ihn komplett fertig
+- Der User kann den Post dann direkt in sein Textfeld übernehmen`
+      
+      let fullResponse = ''
+      await sendMessage({
+        systemPrompt: enhancedSystemPrompt,
+        messages: chatMessagesToClaudeMessages([...chatMessages, { id: '', role: 'user', content: userMessage, timestamp: '' }]),
+        onChunk: (content) => {
+          fullResponse = content
+          updateLastAssistantMessage(chatId, content)
+        },
+        onError: (err) => {
+          setChatError(err.message)
+        }
+      })
+      
+      // Store assistant response in Eugene's memory (async, don't wait)
+      if (fullResponse) {
+        storeConversationMemory({
+          context_type: 'post_creation',
+          context_id: post?.id,
+          role: 'assistant',
+          content: fullResponse
+        }).catch(() => {}) // Silent fail
+      }
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Fehler bei der Anfrage')
+      updateLastAssistantMessage(chatId, '❌ ' + (err instanceof Error ? err.message : 'Fehler'))
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
+  
+  // Handle chat key press
+  const handleChatKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleChatSend()
+    }
+  }
+  
+  // Insert AI response into post
+  const insertIntoPost = (content: string) => {
+    // Extract just the post content (remove any explanations)
+    const cleanContent = content.trim()
+    updateContent('text', cleanContent)
+  }
+  
   // Local state for new affiliate link
   const [newAffiliateName, setNewAffiliateName] = useState('')
   const [newAffiliateUrl, setNewAffiliateUrl] = useState('')
@@ -508,6 +649,12 @@ Simon`)
   const addStorePost = usePostsStore((state) => state.addPost)
   const deleteStorePost = usePostsStore((state) => state.deletePost)
   const [isNewPost, setIsNewPost] = useState(false)
+  
+  // Check if we have style data from winner posts
+  const hasStyleData = useMemo(() => {
+    const styleAnalysis = analyzeWritingStyle(allPosts, 'linkedin')
+    return styleAnalysis !== null
+  }, [allPosts])
   
   const handleBack = () => {
     if (fromCalendar) {
@@ -810,9 +957,9 @@ Simon`)
   }
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-140px)] -my-4">
+    <div className="flex gap-6 h-[calc(100vh-140px)] -my-4 overflow-hidden">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
         {/* Header */}
         <div className="flex items-center gap-4 pb-5 shrink-0 mb-5">
           <button 
@@ -887,7 +1034,7 @@ Simon`)
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-4 pr-2 pb-4">
           
           {/* STEP 1: STRATEGIE */}
           <WorkflowSection
@@ -994,14 +1141,25 @@ Simon`)
           >
             {/* Workflow URL - compact */}
             <div className="space-y-2 pb-4 border-b border-neutral-200 dark:border-neutral-800">
-              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
-                Workflow URL (optional)
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                  Workflow URL (optional)
+                </label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-[11px] text-purple-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10"
+                  onClick={() => window.open('https://weavy.ai', '_blank')}
+                >
+                  <ExternalLink className="h-3 w-3 mr-1.5" />
+                  Workflow Builder öffnen
+                </Button>
+              </div>
               <div className="flex gap-2">
                 <Input
                   value={workflowUrl}
                   onChange={(e) => setWorkflowUrl(e.target.value)}
-                  placeholder="https://notion.so/... oder andere URL"
+                  placeholder="https://weavy.ai/... oder andere URL"
                   className="text-[13px]"
                 />
                 <div className="flex gap-1">
@@ -1019,7 +1177,56 @@ Simon`)
                 </div>
               </div>
             </div>
-              {/* Upload Area */}
+
+            {/* Loom Bulletpoints - Step 2: Video aufnehmen */}
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider mb-3 block">
+                Loom Bulletpoints
+              </label>
+              <div className="space-y-4">
+              {loomBulletpoints.length > 0 && (
+                <div className="space-y-2">
+                  {loomBulletpoints.map((point, index) => (
+                    <div 
+                      key={index} 
+                      className="group flex items-center gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center text-[11px] font-semibold text-neutral-400">
+                        {index + 1}
+                      </div>
+                      <span className="flex-1 text-[13px] text-neutral-300">{point}</span>
+                      <button 
+                        onClick={() => removeBulletpoint(index)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-100 text-neutral-500 hover:text-red-500 transition-all"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  value={newBulletpoint}
+                  onChange={(e) => setNewBulletpoint(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addBulletpoint()}
+                  placeholder="Neuen Punkt hinzufügen..."
+                  className="flex-1 h-11"
+                />
+                <Button 
+                  variant="outline"
+                  onClick={addBulletpoint}
+                  disabled={!newBulletpoint.trim()}
+                  className="h-11 px-4"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              </div>
+            </div>
+
+            {/* Upload Area - Step 3: Video hochladen */}
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
               {!mediaFile ? (
                 <div
                   onDragOver={handleDragOver}
@@ -1169,79 +1376,184 @@ Simon`)
                   />
                 </div>
               )}
-
-            {/* LinkedIn Post Text */}
-            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-4">
-              <Textarea
-                value={getFullPostText()}
-                onChange={(e) => updateContent('text', e.target.value)}
-                placeholder="Schreibe deinen LinkedIn Post..."
-                className="min-h-[220px] text-[14px] leading-relaxed resize-none bg-neutral-50 border-neutral-200 focus:bg-white dark:bg-neutral-800/50 dark:border-neutral-700 dark:focus:bg-neutral-700 transition-colors"
-              />
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className={cn(
-                    "text-[12px] font-medium px-2.5 py-1 rounded-full",
-                    charCount > 2800 
-                      ? "bg-red-100 text-red-700" 
-                      : charCount > 2500 
-                        ? "bg-amber-100 text-amber-700" 
-                        : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
-                  )}>
-                    {charCount.toLocaleString()} / 3.000
-                  </span>
-                  {charCount > 0 && charCount <= 2500 && (
-                    <span className="text-[11px] text-neutral-500">Gute Länge</span>
-                  )}
-                </div>
-                <CopyBtn text={getFullPostText()} />
-              </div>
             </div>
 
-            {/* Loom Bulletpoints */}
-            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
-              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider mb-3 block">
-                Loom Bulletpoints
-              </label>
-              <div className="space-y-4">
-              {loomBulletpoints.length > 0 && (
-                <div className="space-y-2">
-                  {loomBulletpoints.map((point, index) => (
-                    <div 
-                      key={index} 
-                      className="group flex items-center gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors"
-                    >
-                      <div className="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center text-[11px] font-semibold text-neutral-400">
-                        {index + 1}
-                      </div>
-                      <span className="flex-1 text-[13px] text-neutral-300">{point}</span>
-                      <button 
-                        onClick={() => removeBulletpoint(index)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-100 text-neutral-500 hover:text-red-500 transition-all"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+            {/* LinkedIn Post with AI Chat - Step 4 */}
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-4">
+              
+              {/* AI Chat Interface */}
+              <div className="rounded-xl border border-neutral-700 bg-neutral-900/50 overflow-hidden">
+                {/* Chat Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-800 bg-neutral-900/80">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-neutral-700 flex items-center justify-center text-[11px] font-semibold text-white">
+                      E
                     </div>
-                  ))}
+                    <div>
+                      <h4 className="text-[13px] font-medium text-white">Eugene</h4>
+                      <p className="text-[10px] text-neutral-500">
+                        {hasStyleData ? 'Schreibstil geladen' : 'Schreibe Posts für mehr Learnings'}
+                      </p>
+                    </div>
+                  </div>
+                  {chatMessages.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-[11px] text-neutral-500 hover:text-neutral-300"
+                      onClick={() => clearChatMessages(chatId)}
+                    >
+                      Chat leeren
+                    </Button>
+                  )}
                 </div>
-              )}
-              <div className="flex gap-2">
-                <Input
-                  value={newBulletpoint}
-                  onChange={(e) => setNewBulletpoint(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && addBulletpoint()}
-                  placeholder="Neuen Punkt hinzufügen..."
-                  className="flex-1 h-11"
-                />
-                <Button 
-                  variant="outline"
-                  onClick={addBulletpoint}
-                  disabled={!newBulletpoint.trim()}
-                  className="h-11 px-4"
+                
+                {/* Chat Messages */}
+                <div 
+                  ref={chatScrollRef}
+                  className="h-[280px] overflow-y-auto p-4 space-y-4"
                 >
-                  <Plus className="h-4 w-4" />
-                </Button>
+                  {chatMessages.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                      <div className="w-12 h-12 rounded-xl bg-neutral-800 flex items-center justify-center mb-3">
+                        <MessageCircle className="h-5 w-5 text-neutral-500" />
+                      </div>
+                      <p className="text-[13px] text-neutral-400 mb-1">Chatte mit Eugene</p>
+                      <p className="text-[11px] text-neutral-600 max-w-xs">
+                        Er kennt deinen Schreibstil, deine Learnings und den aktuellen Kontext (Idee, Hypothese, Bulletpoints)
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                        <button
+                          onClick={() => setChatInput('Schreibe mir einen Post basierend auf meinen Bulletpoints')}
+                          className="text-[11px] px-3 py-1.5 rounded-full bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors"
+                        >
+                          Post aus Bulletpoints
+                        </button>
+                        <button
+                          onClick={() => setChatInput('Gib mir 3 Hook-Varianten für meinen Post')}
+                          className="text-[11px] px-3 py-1.5 rounded-full bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors"
+                        >
+                          Hook-Varianten
+                        </button>
+                        <button
+                          onClick={() => setChatInput('Verbessere meinen aktuellen Post')}
+                          className="text-[11px] px-3 py-1.5 rounded-full bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white transition-colors"
+                        >
+                          Post verbessern
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    chatMessages.map((msg, i) => (
+                      <div key={msg.id || i} className={cn("flex gap-3", msg.role === 'user' && "flex-row-reverse")}>
+                        <div className={cn(
+                          "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                          msg.role === 'user' 
+                            ? "bg-neutral-700" 
+                            : "bg-neutral-600"
+                        )}>
+                          {msg.role === 'user' ? (
+                            <User className="h-3.5 w-3.5 text-neutral-300" />
+                          ) : (
+                            <Bot className="h-3.5 w-3.5 text-white" />
+                          )}
+                        </div>
+                        <div className={cn(
+                          "flex-1 min-w-0",
+                          msg.role === 'user' && "text-right"
+                        )}>
+                          <div className={cn(
+                            "inline-block max-w-[90%] rounded-xl px-3 py-2 text-[13px]",
+                            msg.role === 'user' 
+                              ? "bg-neutral-700 text-white" 
+                              : "bg-neutral-800 text-neutral-200"
+                          )}>
+                            <div className="whitespace-pre-wrap break-words">{msg.content || '...'}</div>
+                          </div>
+                          {msg.role === 'assistant' && msg.content && msg.content.length > 50 && (
+                            <button
+                              onClick={() => insertIntoPost(msg.content)}
+                              className="mt-2 flex items-center gap-1.5 text-[11px] text-neutral-400 hover:text-white transition-colors"
+                            >
+                              <CornerDownLeft className="h-3 w-3" />
+                              In Post übernehmen
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  {isChatLoading && chatMessages[chatMessages.length - 1]?.content === '' && (
+                    <div className="flex gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-neutral-600 flex items-center justify-center">
+                        <Loader2 className="h-3.5 w-3.5 text-white animate-spin" />
+                      </div>
+                      <div className="bg-neutral-800 rounded-xl px-3 py-2">
+                        <span className="text-[13px] text-neutral-400">Schreibt...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Chat Input */}
+                <div className="p-3 border-t border-neutral-800 bg-neutral-900/80">
+                  {chatError && (
+                    <p className="text-[11px] text-red-400 mb-2 px-1">{chatError}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Textarea
+                      ref={chatInputRef}
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={handleChatKeyDown}
+                      placeholder="Frag Eugene..."
+                      className="flex-1 min-h-[44px] max-h-[120px] text-[13px] resize-none bg-neutral-800 border-neutral-700 focus:border-neutral-500 text-white placeholder:text-neutral-500"
+                      rows={1}
+                    />
+                    <Button
+                      onClick={handleChatSend}
+                      disabled={!chatInput.trim() || isChatLoading}
+                      className="h-11 px-4 bg-white text-black hover:bg-neutral-200 disabled:opacity-50"
+                    >
+                      {isChatLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Send className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </div>
+              
+              {/* Post Textarea */}
+              <div className="space-y-3">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
+                  LinkedIn Post
+                </label>
+                <Textarea
+                  value={getFullPostText()}
+                  onChange={(e) => updateContent('text', e.target.value)}
+                  placeholder="Schreibe deinen LinkedIn Post..."
+                  className="min-h-[220px] text-[14px] leading-relaxed resize-none bg-neutral-50 border-neutral-200 focus:bg-white dark:bg-neutral-800/50 dark:border-neutral-700 dark:focus:bg-neutral-700 transition-colors"
+                />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className={cn(
+                      "text-[12px] font-medium px-2.5 py-1 rounded-full",
+                      charCount > 2800 
+                        ? "bg-red-100 text-red-700" 
+                        : charCount > 2500 
+                          ? "bg-amber-100 text-amber-700" 
+                          : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
+                    )}>
+                      {charCount.toLocaleString()} / 3.000
+                    </span>
+                    {charCount > 0 && charCount <= 2500 && (
+                      <span className="text-[11px] text-neutral-500">Gute Länge</span>
+                    )}
+                  </div>
+                  <CopyBtn text={getFullPostText()} />
+                </div>
               </div>
             </div>
           </WorkflowSection>
@@ -1519,6 +1831,11 @@ Simon`)
           }
           setPost(updated)
           updateStorePost(post.id, updated)
+          
+          // Store in Eugene's memory when published
+          if (status === 'published') {
+            storePostMemory(updated as any).catch(() => {})
+          }
         }}
         onTagsChange={(tags: ContentTagId[]) => {
           const updated = { ...post, tags }
@@ -1529,7 +1846,7 @@ Simon`)
           const updated = { 
             ...post, 
             scheduledFor: date?.toISOString(),
-            status: date ? 'scheduled' as WorkflowStatusId : post.status
+            status: date ? 'planned' as WorkflowStatusId : post.status
           }
           setPost(updated)
           updateStorePost(post.id, updated)

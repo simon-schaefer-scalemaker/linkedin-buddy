@@ -10,7 +10,7 @@ export interface Platform {
 }
 
 // Workflow Status Types
-export type WorkflowStatusId = 'idea' | 'draft' | 'review' | 'scheduled' | 'published' | 'archived'
+export type WorkflowStatusId = 'idea' | 'content' | 'cutting' | 'review' | 'planned' | 'published'
 
 export interface WorkflowStatus {
   id: WorkflowStatusId

@@ -99,13 +99,13 @@ export function AppLayout({ children }: AppLayoutProps) {
           // Dark mode
           "dark:bg-[#0a0a0a]",
           // Desktop: show/hide based on sidebarOpen
-          sidebarOpen ? "xl:w-[240px]" : "xl:w-0 xl:overflow-hidden",
+          sidebarOpen ? "xl:w-[200px]" : "xl:w-0 xl:overflow-hidden",
           // Mobile/Tablet: show/hide based on mobileOpen
-          mobileOpen ? "w-[240px] translate-x-0" : "w-[240px] -translate-x-full xl:translate-x-0"
+          mobileOpen ? "w-[200px] translate-x-0" : "w-[200px] -translate-x-full xl:translate-x-0"
         )}
       >
         <div className={cn(
-          "flex flex-col h-full min-w-[240px]",
+          "flex flex-col h-full min-w-[200px]",
           (sidebarOpen || mobileOpen) ? "opacity-100" : "xl:opacity-0"
         )}>
           {/* Logo Section */}
@@ -235,7 +235,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div 
         className={cn(
           "flex-1 flex flex-col min-h-screen transition-all duration-300 ease-out",
-          sidebarOpen ? "xl:pl-[240px]" : "xl:pl-0"
+          sidebarOpen ? "xl:pl-[200px]" : "xl:pl-0"
         )}
       >
         {/* Content Window */}
@@ -323,7 +323,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               "flex-1 overflow-y-auto",
               "bg-white dark:bg-neutral-950"
             )}>
-              <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+              <div className="mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-6 lg:py-8">
                 {children}
               </div>
             </main>

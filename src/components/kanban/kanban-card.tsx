@@ -69,7 +69,7 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group cursor-pointer transition-all duration-200",
+        "group cursor-pointer transition-all duration-200 overflow-hidden",
         // Light mode hover
         "hover:border-neutral-300 hover:bg-neutral-50",
         // Dark mode hover
@@ -80,10 +80,10 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
       {...attributes}
       {...listeners}
     >
-      <div className="p-3.5">
+      <div className="p-3.5 overflow-hidden">
         {/* Header with menu */}
-        <div className="flex items-start justify-between mb-2">
-          <p className="text-sm font-medium text-neutral-900 dark:text-white leading-snug flex-1 pr-2">
+        <div className="flex items-start justify-between mb-2 min-w-0">
+          <p className="text-sm font-medium text-neutral-900 dark:text-white leading-snug flex-1 pr-2 line-clamp-2 break-all min-w-0">
             {getPreview()}
           </p>
           <DropdownMenu>

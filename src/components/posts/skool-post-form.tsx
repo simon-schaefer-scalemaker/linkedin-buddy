@@ -427,7 +427,7 @@ export function SkoolPostForm() {
           const updated = { 
             ...post, 
             scheduledFor: date?.toISOString(),
-            status: date ? 'scheduled' as WorkflowStatusId : post.status
+            status: date ? 'planned' as WorkflowStatusId : post.status
           }
           setPost(updated)
           updateStorePost(post.id, updated)

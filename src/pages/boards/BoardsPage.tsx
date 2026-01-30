@@ -189,7 +189,7 @@ export function BoardsPage() {
   })
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] -my-4">
+    <div className="flex flex-col h-[calc(100vh-140px)] -my-4 overflow-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 shrink-0">
         <div className="flex items-center gap-3 sm:gap-4">
@@ -356,7 +356,7 @@ export function BoardsPage() {
               newPost = {
                 id: newId,
                 platform: 'linkedin',
-                status: 'draft',
+                status: 'idea',
                 tags: [],
                 createdAt: now,
                 updatedAt: now,
@@ -372,7 +372,7 @@ export function BoardsPage() {
               newPost = {
                 id: newId,
                 platform: 'youtube',
-                status: 'draft',
+                status: 'idea',
                 tags: [],
                 createdAt: now,
                 updatedAt: now,
@@ -389,7 +389,7 @@ export function BoardsPage() {
               newPost = {
                 id: newId,
                 platform: 'instagram',
-                status: 'draft',
+                status: 'idea',
                 tags: [],
                 createdAt: now,
                 updatedAt: now,
@@ -405,7 +405,7 @@ export function BoardsPage() {
               newPost = {
                 id: newId,
                 platform: 'skool',
-                status: 'draft',
+                status: 'idea',
                 tags: [],
                 createdAt: now,
                 updatedAt: now,

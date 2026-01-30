@@ -260,9 +260,10 @@ export function executeAction(
           },
           byStatus: {
             idea: posts.filter(p => p.status === 'idea').length,
-            draft: posts.filter(p => p.status === 'draft').length,
+            content: posts.filter(p => p.status === 'content').length,
+            cutting: posts.filter(p => p.status === 'cutting').length,
             review: posts.filter(p => p.status === 'review').length,
-            scheduled: posts.filter(p => p.status === 'scheduled').length,
+            planned: posts.filter(p => p.status === 'planned').length,
             published: posts.filter(p => p.status === 'published').length,
           },
           withMetrics: posts.filter(p => p.metrics).length,
@@ -360,9 +361,10 @@ export function getManagerSystemPrompt(posts: Post[]): string {
     },
     byStatus: {
       idea: posts.filter(p => p.status === 'idea').length,
-      draft: posts.filter(p => p.status === 'draft').length,
+      content: posts.filter(p => p.status === 'content').length,
+      cutting: posts.filter(p => p.status === 'cutting').length,
       review: posts.filter(p => p.status === 'review').length,
-      scheduled: posts.filter(p => p.status === 'scheduled').length,
+      planned: posts.filter(p => p.status === 'planned').length,
       published: posts.filter(p => p.status === 'published').length,
     },
   }
@@ -379,7 +381,7 @@ export function getManagerSystemPrompt(posts: Post[]): string {
 ## Aktuelle Statistiken
 - Gesamt: ${stats.total} Posts
 - LinkedIn: ${stats.byPlatform.linkedin} | YouTube: ${stats.byPlatform.youtube} | Instagram: ${stats.byPlatform.instagram} | Skool: ${stats.byPlatform.skool}
-- Ideen: ${stats.byStatus.idea} | Entwürfe: ${stats.byStatus.draft} | Review: ${stats.byStatus.review} | Geplant: ${stats.byStatus.scheduled} | Veröffentlicht: ${stats.byStatus.published}
+- Idea: ${stats.byStatus.idea} | Content: ${stats.byStatus.content} | Cutting: ${stats.byStatus.cutting} | Review: ${stats.byStatus.review} | Planned: ${stats.byStatus.planned} | Published: ${stats.byStatus.published}
 
 ## Verfügbare Aktionen
 Du kannst folgende Aktionen ausführen. Antworte mit einem JSON-Block wenn du eine Aktion ausführen möchtest:
@@ -402,7 +404,7 @@ Content-Struktur pro Plattform:
 
 ### Post suchen
 \`\`\`json
-{"action": "search_posts", "query": "Suchbegriff", "platform": "linkedin", "status": "draft"}
+{"action": "search_posts", "query": "Suchbegriff", "platform": "linkedin", "status": "content"}
 \`\`\`
 
 ### Status ändern (Massenoperation)

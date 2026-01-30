@@ -3,6 +3,7 @@ import { buildContextForPlatform, buildCurrentPostContext } from './ai-context'
 import { buildLearningsContext } from '@/stores/learningsStore'
 import { buildPatternContext, generateNextPostRecommendations } from './pattern-recognition'
 import { analyzeWritingStyle, buildStylePrompt } from './style-analyzer'
+import { getRelevantContext } from './eugene-memory'
 
 // Platform-specific best practices
 const PLATFORM_BEST_PRACTICES: Record<PlatformId, string> = {
@@ -124,11 +125,122 @@ export function buildSystemPrompt(
   const styleAnalysis = analyzeWritingStyle(allPosts, platform)
   const stylePrompt = styleAnalysis ? buildStylePrompt(styleAnalysis) : ''
   
-  return `Du bist der persönliche Ghostwriter dieses Users. Du schreibst EXAKT in seinem Stil.
+  return `Du bist Eugene, der persönliche Ghostwriter dieses Users. Du schreibst EXAKT in seinem Stil.
 
 # Deine Rolle
-- Du bist KEIN generischer AI-Assistent - du bist sein persönlicher Ghostwriter
+- Dein Name ist Eugene - du bist sein persönlicher Ghostwriter
+- Du bist KEIN generischer AI-Assistent
 - Du kennst seinen Schreibstil, seine Tonalität, seine Struktur
+- Wenn du Posts schreibst, sollen sie sich EXAKT wie er anhören
+- Du analysierst und optimierst basierend auf SEINEN Daten
+- Du schreibst auf Deutsch, es sei denn der User schreibt auf Englisch
+
+# Kommunikationsstil
+- Direkt und konkret - keine vagen Ratschläge
+- Zeige konkrete Beispiele aus SEINEN Posts
+- Referenziere seine Learnings ("In deinem Post über X hat funktioniert...")
+- Nenne konkrete Zahlen ("Deine Statistik-Hooks performen 40% besser")
+- Wenn du Posts schreibst: Schreibe sie FERTIG, nicht als Gerüst
+
+${stylePrompt}
+
+${bestPractices}
+
+${postsContext}
+${learningsContext}
+${patternContext}
+
+## 🎯 Personalisierte Empfehlungen für diesen User:
+${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+
+${currentPostContext}
+
+# WICHTIG - DU BIST SEIN GHOSTWRITER!
+- Schreibe in SEINEM Stil, nicht in einem generischen AI-Stil
+- Nutze seine Formulierungen, seine Struktur, seine Emojis (oder keine)
+- Bei leerem Entwurf: Frag nach der Idee und schreibe dann einen KOMPLETTEN Post
+- Der Output soll sofort veröffentlicht werden können
+- NIEMALS generische Platzhalter wie "[Hier einfügen]" oder "..." verwenden`
+}
+
+/**
+ * Enhanced System Prompt Builder with Semantic Search
+ * Uses Eugene's memory to find the most relevant context for the current task
+ */
+export async function buildEnhancedSystemPrompt(
+  platform: PlatformId,
+  allPosts: Post[],
+  currentPost: Post,
+  currentIdea?: string,
+  currentContent?: string
+): Promise<string> {
+  const bestPractices = PLATFORM_BEST_PRACTICES[platform]
+  const currentPostContext = buildCurrentPostContext(currentPost)
+  
+  // Try to get semantically relevant context from Eugene's memory
+  let relevantContext = ''
+  try {
+    const { relevantPosts, relevantLearnings, relevantConversations } = await getRelevantContext({
+      currentIdea,
+      currentContent,
+      platform,
+      contextType: 'writing'
+    })
+    
+    // Build context from semantic search results
+    if (relevantPosts.length > 0) {
+      relevantContext += '\n## SEMANTISCH RELEVANTE POSTS (ähnlich zur aktuellen Idee)\n\n'
+      relevantPosts.forEach((post, i) => {
+        const similarity = Math.round((post.similarity || 0) * 100)
+        relevantContext += `### Ähnlicher Post ${i + 1} (${similarity}% Ähnlichkeit)\n`
+        if (post.title) relevantContext += `**Titel:** ${post.title}\n`
+        relevantContext += `**Inhalt:** ${post.content.slice(0, 300)}${post.content.length > 300 ? '...' : ''}\n`
+        if (post.metadata) {
+          const metrics = post.metadata.metrics as any
+          if (metrics) {
+            relevantContext += `**Performance:** ${metrics.impressions?.toLocaleString() || '?'} Impressionen, ${metrics.likes || 0} Likes\n`
+          }
+        }
+        relevantContext += '\n'
+      })
+    }
+    
+    if (relevantLearnings.length > 0) {
+      relevantContext += '\n## RELEVANTE LEARNINGS (zur aktuellen Idee)\n\n'
+      relevantLearnings.forEach((learning, i) => {
+        relevantContext += `${i + 1}. ${learning.content}\n`
+      })
+      relevantContext += '\n'
+    }
+    
+    if (relevantConversations.length > 0) {
+      relevantContext += '\n## RELEVANTE FRÜHERE GESPRÄCHE\n\n'
+      relevantConversations.slice(0, 3).forEach((conv) => {
+        relevantContext += `- [${conv.role}]: ${conv.content.slice(0, 200)}...\n`
+      })
+      relevantContext += '\n'
+    }
+  } catch (error) {
+    console.log('Eugene memory not available, using fallback context')
+  }
+  
+  // Fallback to traditional context if no semantic results
+  const postsContext = relevantContext || buildContextForPlatform(allPosts, platform)
+  const learningsContext = relevantContext ? '' : buildLearningsContext(platform)
+  const patternContext = buildPatternContext(allPosts, platform)
+  const recommendations = generateNextPostRecommendations(allPosts, platform)
+  
+  // Analyse Schreibstil aus Winner-Posts
+  const styleAnalysis = analyzeWritingStyle(allPosts, platform)
+  const stylePrompt = styleAnalysis ? buildStylePrompt(styleAnalysis) : ''
+  
+  return `Du bist Eugene, der persönliche Ghostwriter dieses Users. Du schreibst EXAKT in seinem Stil.
+
+# Deine Rolle
+- Dein Name ist Eugene - du bist sein persönlicher Ghostwriter
+- Du bist KEIN generischer AI-Assistent
+- Du kennst seinen Schreibstil, seine Tonalität, seine Struktur
+- Du hast Zugang zu semantischer Suche durch alle Posts und Learnings
 - Wenn du Posts schreibst, sollen sie sich EXAKT wie er anhören
 - Du analysierst und optimierst basierend auf SEINEN Daten
 - Du schreibst auf Deutsch, es sei denn der User schreibt auf Englisch
@@ -186,7 +298,7 @@ export function getInitialGreeting(platform: PlatformId, currentPost: Post, hasS
   })()
   
   if (hasContent) {
-    return `Ich sehe deinen ${platformName}-Entwurf. ${hasStyleData ? 'Ich kenne deinen Schreibstil aus deinen Winner-Posts.' : ''} 
+    return `Hey, ich bin Eugene. Ich sehe deinen ${platformName}-Entwurf. ${hasStyleData ? 'Ich kenne deinen Schreibstil aus deinen Winner-Posts.' : ''} 
 
 Wie kann ich helfen?
 
@@ -198,8 +310,8 @@ Was möchtest du?`
   }
   
   const styleInfo = hasStyleData 
-    ? `Ich kenne deinen Schreibstil aus deinen erfolgreichen Posts. Sag mir einfach deine Idee und ich schreibe den **kompletten Post** in deinem Stil.`
-    : `Ich lerne deinen Stil aus deinen Posts. Je mehr Winner-Posts du markierst, desto besser werde ich.`
+    ? `Hey, ich bin Eugene. Ich kenne deinen Schreibstil aus deinen erfolgreichen Posts. Sag mir einfach deine Idee und ich schreibe den **kompletten Post** in deinem Stil.`
+    : `Hey, ich bin Eugene. Ich lerne deinen Stil aus deinen Posts. Je mehr Winner-Posts du markierst, desto besser werde ich.`
   
   return `${styleInfo}
 

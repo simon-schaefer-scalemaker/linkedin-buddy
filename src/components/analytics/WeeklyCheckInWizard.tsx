@@ -291,9 +291,9 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                 <button
                   onClick={() => setCurrentStep(step)}
                   className={cn(
-                    "w-9 h-9 rounded-full flex items-center justify-center transition-all",
-                    isActive && "ring-2 ring-offset-2",
-                    isComplete && !isSkipped && "bg-green-500/20",
+                    "w-9 h-9 rounded-xl flex items-center justify-center transition-all",
+                    isActive && "ring-2 ring-offset-2 ring-offset-neutral-900",
+                    isComplete && !isSkipped && "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/25",
                     isComplete && isSkipped && "bg-neutral-800",
                     !isActive && !isComplete && "bg-neutral-800"
                   )}
@@ -303,7 +303,7 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                   } : undefined}
                 >
                   {isComplete && !isSkipped ? (
-                    <Check className="h-4 w-4 text-green-400" />
+                    <Check className="h-4 w-4 text-white" strokeWidth={2.5} />
                   ) : isComplete && isSkipped ? (
                     <SkipForward className="h-4 w-4 text-neutral-500" />
                   ) : (
@@ -315,8 +315,8 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                 </button>
                 {index < 3 && (
                   <div className={cn(
-                    "w-8 h-0.5 mx-1",
-                    isComplete ? "bg-green-500/30" : "bg-neutral-700"
+                    "w-8 h-0.5 mx-1 rounded-full",
+                    isComplete ? "bg-emerald-500/40" : "bg-neutral-700"
                   )} />
                 )}
               </div>

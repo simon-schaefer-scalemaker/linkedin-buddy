@@ -41,17 +41,24 @@ export const PLATFORM_LIST: Platform[] = PLATFORM_ORDER.map(id => PLATFORMS[id])
 export const WORKFLOW_STATUSES: Record<WorkflowStatusId, WorkflowStatus> = {
   idea: {
     id: 'idea',
-    name: 'Idee',
+    name: 'Idea',
     emoji: '💡',
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-50'
   },
-  draft: {
-    id: 'draft',
-    name: 'Entwurf',
+  content: {
+    id: 'content',
+    name: 'Content',
     emoji: '✏️',
     color: 'text-blue-600',
     bgColor: 'bg-blue-50'
+  },
+  cutting: {
+    id: 'cutting',
+    name: 'Cutting',
+    emoji: '✂️',
+    color: 'text-orange-600',
+    bgColor: 'bg-orange-50'
   },
   review: {
     id: 'review',
@@ -60,33 +67,26 @@ export const WORKFLOW_STATUSES: Record<WorkflowStatusId, WorkflowStatus> = {
     color: 'text-purple-600',
     bgColor: 'bg-purple-50'
   },
-  scheduled: {
-    id: 'scheduled',
-    name: 'Geplant',
+  planned: {
+    id: 'planned',
+    name: 'Planned',
     emoji: '📅',
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50'
+    color: 'text-cyan-600',
+    bgColor: 'bg-cyan-50'
   },
   published: {
     id: 'published',
-    name: 'Veröffentlicht',
+    name: 'Published',
     emoji: '✅',
     color: 'text-green-600',
     bgColor: 'bg-green-50'
-  },
-  archived: {
-    id: 'archived',
-    name: 'Archiviert',
-    emoji: '📦',
-    color: 'text-gray-400',
-    bgColor: 'bg-gray-50'
   }
 }
 
 export const WORKFLOW_STATUS_LIST: WorkflowStatus[] = Object.values(WORKFLOW_STATUSES)
 
 // Kanban Column Order
-export const KANBAN_COLUMNS: WorkflowStatusId[] = ['idea', 'draft', 'review', 'scheduled', 'published']
+export const KANBAN_COLUMNS: WorkflowStatusId[] = ['idea', 'content', 'cutting', 'review', 'planned', 'published']
 
 // Content Tags
 export const CONTENT_TAGS: Record<ContentTagId, ContentTag> = {

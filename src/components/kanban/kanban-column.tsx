@@ -41,13 +41,13 @@ export function KanbanColumn({
       )}
     >
       {/* Column Header */}
-      <div className="p-3.5 border-b border-neutral-200 dark:border-neutral-800/50">
+      <div className="p-2.5 border-b border-neutral-200 dark:border-neutral-800/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="text-base">{statusData.emoji}</span>
-            <h3 className="text-sm font-medium text-neutral-900 dark:text-white">{statusData.name}</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{statusData.emoji}</span>
+            <h3 className="text-[13px] font-medium text-neutral-900 dark:text-white">{statusData.name}</h3>
             <span className={cn(
-              "text-xs px-2 py-0.5 rounded-full",
+              "text-[11px] px-1.5 py-0.5 rounded-full",
               "text-neutral-600 bg-neutral-200",
               "dark:text-neutral-500 dark:bg-neutral-800"
             )}>
@@ -57,10 +57,10 @@ export function KanbanColumn({
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7"
+            className="h-6 w-6"
             onClick={() => onNewPost(status)}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -69,7 +69,7 @@ export function KanbanColumn({
       <ScrollArea className="flex-1 min-h-0">
         <div 
           ref={setNodeRef}
-          className="p-2.5 space-y-2.5"
+          className="p-2 space-y-2"
         >
           <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
             {posts.map(post => (

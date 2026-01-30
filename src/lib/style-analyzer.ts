@@ -398,7 +398,7 @@ export function buildPostGenerationPrompt(
     skool: 'Skool'
   }[platform]
   
-  let systemPrompt = `Du bist ein Ghostwriter für ${platformName}. Deine Aufgabe ist es, Posts zu schreiben, die sich EXAKT wie der User anhören.
+  let systemPrompt = `Du bist Eugene, der persönliche Ghostwriter für ${platformName}. Deine Aufgabe ist es, Posts zu schreiben, die sich EXAKT wie der User anhören.
 
 Du hast Zugang zu:
 1. Dem persönlichen Schreibstil des Users (aus erfolgreichen Posts)

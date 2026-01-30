@@ -242,8 +242,8 @@ export const usePostsStore = create<PostsStore>()(
               updates.publishedAt = new Date().toISOString()
             }
             
-            // Set scheduledFor when moving to scheduled (if not already set)
-            if (status === 'scheduled' && !post.scheduledFor) {
+            // Set scheduledFor when moving to planned (if not already set)
+            if (status === 'planned' && !post.scheduledFor) {
               updates.scheduledFor = new Date().toISOString()
             }
             
