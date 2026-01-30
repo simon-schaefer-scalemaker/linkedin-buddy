@@ -9,7 +9,6 @@ import { Lightbulb, X, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { usePostsStore } from '@/lib/store'
 import { useLearningsStore } from '@/stores/learningsStore'
-import { PLATFORMS } from '@/lib/constants'
 import type { Post, PlatformId } from '@/lib/types'
 import { cn } from '@/lib/utils'
 

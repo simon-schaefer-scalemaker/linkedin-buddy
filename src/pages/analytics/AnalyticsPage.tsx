@@ -403,7 +403,7 @@ export function AnalyticsPage() {
                       <YAxis tick={{ fontSize: 9 }} width={35} tickFormatter={(v) => formatNumber(v)} />
                       <Tooltip 
                         contentStyle={{ fontSize: 10 }}
-                        formatter={(value: number, name: string) => [formatNumber(value), name]}
+                        formatter={(value: number | undefined, name: string | undefined) => [formatNumber(value ?? 0), name ?? '']}
                       />
                       <Area type="monotone" dataKey="linkedin" stackId="1" stroke={PLATFORM_COLORS.linkedin} fill={PLATFORM_COLORS.linkedin} fillOpacity={0.8} name="LinkedIn" />
                       <Area type="monotone" dataKey="youtube" stackId="1" stroke={PLATFORM_COLORS.youtube} fill={PLATFORM_COLORS.youtube} fillOpacity={0.8} name="YouTube" />

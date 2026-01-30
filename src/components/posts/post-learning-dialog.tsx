@@ -6,8 +6,7 @@ import {
   Minus,
   Loader2,
   Lightbulb,
-  Target,
-  AlertCircle
+  Target
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,7 +22,7 @@ import { useLearningsStore } from '@/stores/learningsStore'
 import { usePostsStore } from '@/lib/store'
 import { sendMessage, isApiConfigured } from '@/lib/claude-api'
 import { buildLearningPrompt } from '@/lib/ai-prompts'
-import type { Post, PlatformId, PostLearning } from '@/lib/types'
+import type { Post, PostLearning } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
 interface PostLearningDialogProps {

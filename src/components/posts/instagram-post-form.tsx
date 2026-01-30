@@ -416,8 +416,8 @@ export function InstagramPostForm() {
             metrics: { ...post.metrics, ...metrics },
             metricsCollectedAt: measuredAt,
             metricsPeriodDays: measurementPeriod
-          }
-          setPost(updated as InstagramPost)
+          } as InstagramPost
+          setPost(updated)
           updateStorePost(post.id, updated)
         }}
       />

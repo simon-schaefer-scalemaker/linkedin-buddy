@@ -61,10 +61,10 @@ interface PostMetricsFormProps {
 }
 
 export function PostMetricsForm({ platform, post, onMetricsChange }: PostMetricsFormProps) {
-  const existingMetrics = post.metrics || {}
+  const existingMetrics = (post.metrics || {}) as Record<string, number | undefined>
   const [metrics, setMetrics] = useState<Record<string, string>>(
     Object.fromEntries(
-      PLATFORM_METRICS[platform].map(m => [m.key, existingMetrics[m.key as keyof typeof existingMetrics]?.toString() || ''])
+      PLATFORM_METRICS[platform].map(m => [m.key, existingMetrics[m.key]?.toString() || ''])
     )
   )
   const [measurementPeriod, setMeasurementPeriod] = useState('7')

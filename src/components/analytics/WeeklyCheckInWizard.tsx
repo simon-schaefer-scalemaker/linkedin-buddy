@@ -298,8 +298,8 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                     !isActive && !isComplete && "bg-neutral-800"
                   )}
                   style={isActive ? { 
-                    backgroundColor: config.color, 
-                    ringColor: config.color 
+                    backgroundColor: config.color,
+                    ['--tw-ring-color' as string]: config.color 
                   } : undefined}
                 >
                   {isComplete && !isSkipped ? (

@@ -438,8 +438,8 @@ export function SkoolPostForm() {
             metrics: { ...post.metrics, ...metrics },
             metricsCollectedAt: measuredAt,
             metricsPeriodDays: measurementPeriod
-          }
-          setPost(updated as SkoolPost)
+          } as SkoolPost
+          setPost(updated)
           updateStorePost(post.id, updated)
         }}
       />

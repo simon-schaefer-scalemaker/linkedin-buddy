@@ -1,8 +1,8 @@
 import type { 
   Post, 
   LinkedInPost, 
-  YouTubePost, 
-  InstagramPost, 
+  YouTubePost,
+  InstagramPost,
   SkoolPost,
   PlatformId 
 } from './types'
@@ -16,28 +16,6 @@ interface LinkedInStructure {
   hashtagCount: number
   totalLength: number
   hasEmojis: boolean
-}
-
-interface YouTubeStructure {
-  titleLength: number
-  descriptionLength: number
-  tagCount: number
-  hasCategory: boolean
-  isShort: boolean
-}
-
-interface InstagramStructure {
-  captionLength: number
-  hashtagCount: number
-  hasLocation: boolean
-  type: string
-}
-
-interface SkoolStructure {
-  titleLength: number
-  bodyLength: number
-  hasCategory: boolean
-  isPinned: boolean
 }
 
 // Analyze LinkedIn post structure
@@ -532,7 +510,7 @@ export function buildCurrentPostContext(post: Post): string {
       context += `**Typ:** ${igPost.content.type}\n`
       if (igPost.content.caption) context += `**Caption:** "${igPost.content.caption}"\n`
       if (igPost.content.hashtags?.length) {
-        context += `**Hashtags:** ${igPost.content.hashtags.map(h => `#${h}`).join(' ')}\n`
+        context += `**Hashtags:** ${igPost.content.hashtags.map((h: string) => `#${h}`).join(' ')}\n`
       }
       break
     }

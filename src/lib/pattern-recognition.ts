@@ -467,9 +467,10 @@ export function validateHypothesis(
   
   // Analysiere ob die Hypothese spezifische Elemente enthält
   const hypothesis = post.hypothesis.toLowerCase()
-  const mentionsHook = hypothesis.includes('hook') || hypothesis.includes('frage') || hypothesis.includes('statistik')
-  const mentionsTopic = hypothesis.includes('thema') || hypothesis.includes('topic') || CONTENT_TOPICS[post.topic || 'other']?.name.toLowerCase()
-  const mentionsFormat = hypothesis.includes('format') || hypothesis.includes('carousel') || hypothesis.includes('video')
+  // These analysis variables are intentionally computed but not used yet
+  void (hypothesis.includes('hook') || hypothesis.includes('frage') || hypothesis.includes('statistik'))
+  void (hypothesis.includes('thema') || hypothesis.includes('topic') || CONTENT_TOPICS[post.topic || 'other']?.name.toLowerCase())
+  void (hypothesis.includes('format') || hypothesis.includes('carousel') || hypothesis.includes('video'))
   
   let reason = ''
   let suggestion = ''

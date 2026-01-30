@@ -10,7 +10,7 @@ import { LearningReminderBadge } from '@/components/posts/learning-reminder-badg
 import { QuickPostGenerator } from '@/components/posts/quick-post-generator'
 import { usePostsStore } from '@/lib/store'
 import { PLATFORMS, PLATFORM_ORDER } from '@/lib/constants'
-import type { Post, WorkflowStatusId, PlatformId, LinkedInPost, YouTubePost, InstagramPost, SkoolPost, HookType, ContentTopic } from '@/lib/types'
+import type { Post, WorkflowStatusId, PlatformId, LinkedInPost, YouTubePost, InstagramPost, SkoolPost } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { differenceInDays } from 'date-fns'
 import { sendSlackNotification, getSlackWebhookUrl } from '@/lib/slack-notifications'
@@ -380,7 +380,8 @@ export function BoardsPage() {
                 topic,
                 content: {
                   title: content.split('\n')[0] || '',
-                  description: content
+                  description: content,
+                  isShort: false
                 }
               } as YouTubePost
               break
@@ -395,7 +396,8 @@ export function BoardsPage() {
                 hookType,
                 topic,
                 content: {
-                  caption: content
+                  caption: content,
+                  type: 'post'
                 }
               } as InstagramPost
               break

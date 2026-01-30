@@ -6,24 +6,19 @@
 import { useState, useEffect } from 'react'
 import { 
   Sparkles, 
-  TrendingUp, 
   TrendingDown, 
   Target,
   Lightbulb,
-  Clock,
-  BarChart3,
-  RefreshCw,
-  Loader2
+  Clock
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { usePostsStore } from '@/lib/store'
 import { useLearningsStore } from '@/stores/learningsStore'
 import { analyzePatterns, generateNextPostRecommendations, type PatternAnalysis } from '@/lib/pattern-recognition'
-import { HOOK_TYPES, CONTENT_TOPICS, CONTENT_FORMATS, type PlatformId } from '@/lib/types'
+import { HOOK_TYPES, CONTENT_TOPICS, type PlatformId } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { startOfWeek, endOfWeek, isWithinInterval, subWeeks, format } from 'date-fns'
-import { de } from 'date-fns/locale'
+import { startOfWeek, endOfWeek, isWithinInterval, subWeeks } from 'date-fns'
 
 interface AIPerformanceReportProps {
   platform?: PlatformId
@@ -63,7 +58,8 @@ export function AIPerformanceReport({ platform, className }: AIPerformanceReport
   
   const successRate = getSuccessRate(platform)
   const topInsights = getTopInsights(platform, 3)
-  const recommendations = generateNextPostRecommendations(allPosts, platform || 'linkedin')
+  // recommendations intentionally unused - kept for future features
+  void generateNextPostRecommendations(allPosts, platform || 'linkedin')
   
   if (!analysis || analysis.summary.totalPostsAnalyzed < 3) {
     return (

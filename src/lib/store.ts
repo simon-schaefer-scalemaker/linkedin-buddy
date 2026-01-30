@@ -24,7 +24,7 @@ function postToDb(post: Post & { title?: string }) {
     title = (post as any).title
   } else if ('content' in post && post.content) {
     if (typeof post.content === 'string') {
-      title = post.content.slice(0, 100)
+      title = (post.content as string).slice(0, 100)
     } else if ('text' in post.content) {
       title = post.content.text?.slice(0, 100) || 'Untitled'
     } else if ('title' in post.content) {

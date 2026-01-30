@@ -22,8 +22,6 @@ import {
   ChevronRight,
   ChevronDown,
   Target,
-  TrendingUp,
-  Minus,
   Package
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -33,10 +31,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { PostSidebar } from './post-sidebar'
 import { AiChatPanel } from './ai-chat-panel'
 import { usePostsStore, useTemplatesStore, useCutterSharesStore, useGlobalSettingsStore, type TemplateCategory, type Template } from '@/lib/store'
-import type { LinkedInPost, WorkflowStatusId, ContentTagId } from '@/lib/types'
+import type { LinkedInPost, WorkflowStatusId, ContentTagId, HookType, ContentTopic, ContentFormat } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { uploadVideo, validateVideoFile, isSupabaseConfigured } from '@/lib/video-upload'
-import { sendMessage } from '@/lib/claude-api'
+import { sendMessage, isApiConfigured } from '@/lib/claude-api'
 import { buildHypothesisPrompt, buildLearningPrompt } from '@/lib/ai-prompts'
 
 // Workflow Step IDs
@@ -1542,8 +1540,8 @@ Simon`)
             metrics: { ...post.metrics, ...metrics },
             metricsCollectedAt: measuredAt,
             metricsPeriodDays: measurementPeriod
-          }
-          setPost(updated as LinkedInPost)
+          } as LinkedInPost
+          setPost(updated)
           updateStorePost(post.id, updated)
         }}
         performanceRating={performanceRating}

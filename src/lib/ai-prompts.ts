@@ -113,13 +113,6 @@ export function buildSystemPrompt(
   allPosts: Post[],
   currentPost: Post
 ): string {
-  const platformName = {
-    linkedin: 'LinkedIn',
-    youtube: 'YouTube',
-    instagram: 'Instagram',
-    skool: 'Skool'
-  }[platform]
-  
   const postsContext = buildContextForPlatform(allPosts, platform)
   const currentPostContext = buildCurrentPostContext(currentPost)
   const bestPractices = PLATFORM_BEST_PRACTICES[platform]
@@ -234,10 +227,10 @@ export function buildLearningPrompt(
   // Get average metrics for comparison
   const publishedPosts = safeAllPosts.filter(p => p && p.platform === platform && p.status === 'published')
   const avgImpressions = publishedPosts.length > 0 
-    ? publishedPosts.reduce((sum, p) => sum + (p.metrics?.impressions || p.metrics?.views || 0), 0) / publishedPosts.length
+    ? publishedPosts.reduce((sum, p) => sum + ((p.metrics as any)?.impressions || (p.metrics as any)?.views || 0), 0) / publishedPosts.length
     : 0
   const avgEngagement = publishedPosts.length > 0
-    ? publishedPosts.reduce((sum, p) => sum + (p.metrics?.engagement || p.metrics?.likes || 0), 0) / publishedPosts.length
+    ? publishedPosts.reduce((sum, p) => sum + ((p.metrics as any)?.engagement || (p.metrics as any)?.likes || 0), 0) / publishedPosts.length
     : 0
   
   // Safely extract post content
@@ -320,7 +313,7 @@ export function buildHypothesisPrompt(
   const winnerPosts = safeAllPosts
     .filter(p => p && p.platform === platform && (
       (p as any).performanceRating === 'winner' || 
-      (p.status === 'published' && (p.metrics?.impressions || p.metrics?.views || 0) > 5000)
+      (p.status === 'published' && ((p.metrics as any)?.impressions || (p.metrics as any)?.views || 0) > 5000)
     ))
     .slice(0, 5)
   

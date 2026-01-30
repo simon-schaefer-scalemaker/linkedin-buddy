@@ -397,8 +397,7 @@ export function YouTubePostForm() {
       // @ts-expect-error - extended fields
       setFinalVideoUrl(storePost.finalVideoUrl || '')
       // Load strategy data
-      // @ts-expect-error - extended fields
-      if (storePost.hypothesis) setHypothesis(storePost.hypothesis)
+      if ((storePost as any).hypothesis) setHypothesis((storePost as any).hypothesis)
       // @ts-expect-error - extended fields
       if (storePost.expectedPerformance) setExpectedPerformance(storePost.expectedPerformance)
       // @ts-expect-error - extended fields
@@ -1048,8 +1047,8 @@ export function YouTubePostForm() {
             metrics: { ...post.metrics, ...metrics },
             metricsCollectedAt: measuredAt,
             metricsPeriodDays: measurementPeriod
-          }
-          setPost(updated as YouTubePost)
+          } as YouTubePost
+          setPost(updated)
           updateStorePost(post.id, updated)
         }}
         performanceRating={performanceRating}

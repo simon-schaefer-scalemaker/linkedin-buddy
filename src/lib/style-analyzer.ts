@@ -3,7 +3,7 @@
  * Extrahiert Tonalität, Struktur und Muster aus erfolgreichen Posts
  */
 
-import type { Post, PlatformId, LinkedInPost, YouTubePost, InstagramPost, SkoolPost } from './types'
+import type { Post, PlatformId } from './types'
 
 export interface StyleAnalysis {
   // Tonalität
@@ -279,7 +279,7 @@ export function analyzeWritingStyle(posts: Post[], platform: PlatformId): StyleA
     p.platform === platform && 
     p.status === 'published' &&
     ((p as any).performanceRating === 'winner' || 
-     (p.metrics && (p.metrics.impressions || p.metrics.views || 0) > 3000))
+     (p.metrics && ((p.metrics as any).impressions || (p.metrics as any).views || 0) > 3000))
   ).slice(0, 10)
   
   if (winnerPosts.length < 2) {

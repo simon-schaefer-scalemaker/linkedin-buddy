@@ -13,8 +13,7 @@ import {
   RefreshCw,
   ArrowRight,
   Lightbulb,
-  Target,
-  X
+  Target
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -44,7 +43,7 @@ export function QuickPostGenerator({
   const [selectedHookType, setSelectedHookType] = useState<HookType | undefined>()
   const [selectedTopic, setSelectedTopic] = useState<ContentTopic | undefined>()
   const [generatedPost, setGeneratedPost] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [_isGenerating, setIsGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
   
   const allPosts = usePostsStore((state) => state.posts)
