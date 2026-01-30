@@ -181,6 +181,75 @@ export interface DashboardStats {
   }[]
 }
 
+// Weekly Metrics Types
+export interface BaseWeeklyMetrics {
+  id: string
+  year: number
+  weekNumber: number
+  weekStart: string
+  notes?: string
+  skipped: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LinkedInWeeklyMetrics extends BaseWeeklyMetrics {
+  platform: 'linkedin'
+  followers?: number
+  impressions?: number
+  engagement?: number
+  profileViews?: number
+  // Calculated
+  followerGrowth?: number
+  engagementRate?: number
+}
+
+export interface YouTubeWeeklyMetrics extends BaseWeeklyMetrics {
+  platform: 'youtube'
+  subscribers?: number
+  views?: number
+  watchTimeHours?: number
+  avgViewDurationSeconds?: number
+  // Calculated
+  subscriberGrowth?: number
+}
+
+export interface InstagramWeeklyMetrics extends BaseWeeklyMetrics {
+  platform: 'instagram'
+  followers?: number
+  reach?: number
+  engagement?: number
+  saves?: number
+  profileVisits?: number
+  // Calculated
+  followerGrowth?: number
+  engagementRate?: number
+}
+
+export interface SkoolWeeklyMetrics extends BaseWeeklyMetrics {
+  platform: 'skool'
+  members?: number
+  activeMembers?: number
+  postViews?: number
+  comments?: number
+  // Calculated
+  memberGrowth?: number
+  activityRate?: number
+}
+
+export type WeeklyMetrics = LinkedInWeeklyMetrics | YouTubeWeeklyMetrics | InstagramWeeklyMetrics | SkoolWeeklyMetrics
+
+// Weekly Check-in State
+export interface WeeklyCheckInData {
+  year: number
+  weekNumber: number
+  weekStart: string
+  linkedin: Partial<LinkedInWeeklyMetrics> & { skipped: boolean }
+  youtube: Partial<YouTubeWeeklyMetrics> & { skipped: boolean }
+  instagram: Partial<InstagramWeeklyMetrics> & { skipped: boolean }
+  skool: Partial<SkoolWeeklyMetrics> & { skipped: boolean }
+}
+
 // User Types
 export interface User {
   id: string

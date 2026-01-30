@@ -40,6 +40,10 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
 
   // Get post title/content preview
   const getPreview = () => {
+    // First check for explicit title field on post itself
+    if ('title' in post && (post as any).title) {
+      return (post as any).title
+    }
     if ('content' in post) {
       if ('title' in post.content && post.content.title) {
         return post.content.title

@@ -11,11 +11,13 @@ import {
   Search,
   PanelLeftClose,
   Kanban,
-  Lightbulb
+  Lightbulb,
+  Bot
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { ManagerChat } from '@/components/manager/ManagerChat'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -39,11 +41,11 @@ const navSections: NavSection[] = [
   {
     title: 'Übersicht',
     items: [
-      { name: 'Goals', href: '/', icon: Target },
-      { name: 'Brainstorming', href: '/brainstorming', icon: Lightbulb },
+      { name: 'OKRs', href: '/', icon: Target },
       { name: 'Boards', href: '/boards', icon: Kanban },
       { name: 'Kalender', href: '/calendar', icon: Calendar },
       { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+      { name: 'Brainstorming', href: '/brainstorming', icon: Lightbulb },
     ]
   }
 ]
@@ -53,6 +55,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsedSections, setCollapsedSections] = useState<string[]>([])
+  const [managerOpen, setManagerOpen] = useState(false)
 
   const toggleSection = (title: string) => {
     setCollapsedSections(prev => 
@@ -240,7 +243,16 @@ export function AppLayout({ children }: AppLayoutProps) {
                 </button>
               </div>
 
-              <div className="w-8" />
+              {/* Manager Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setManagerOpen(true)}
+                className="gap-2 bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200 hover:border-orange-300 hover:from-orange-100 hover:to-amber-100 text-orange-700"
+              >
+                <Bot className="h-4 w-4" />
+                <span className="hidden sm:inline">Manager</span>
+              </Button>
             </header>
 
             {/* Page Content */}
@@ -252,6 +264,9 @@ export function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
       </div>
+
+      {/* Manager Chat */}
+      <ManagerChat open={managerOpen} onOpenChange={setManagerOpen} />
     </div>
   )
 }

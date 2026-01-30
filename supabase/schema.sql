@@ -248,28 +248,32 @@ CREATE TABLE public.learning_log (
 CREATE INDEX idx_learning_user ON public.learning_log(user_id, created_at DESC);
 
 -- =============================================
--- 9. WEEKLY METRICS (Growth Tracking)
+-- 9. PLATFORM WEEKLY METRICS (Multi-Platform Growth Tracking)
 -- =============================================
-CREATE TABLE public.weekly_metrics (
+
+-- LinkedIn Weekly Metrics
+CREATE TABLE public.linkedin_weekly_metrics (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
   
   -- Time Period
   year INTEGER NOT NULL,
   week_number INTEGER NOT NULL CHECK (week_number >= 1 AND week_number <= 53),
+  week_start DATE NOT NULL,
   
-  -- LinkedIn Profile Metrics
-  connections INTEGER,
+  -- Profile Metrics
   followers INTEGER,
   impressions INTEGER,
+  engagement INTEGER,
   profile_views INTEGER,
   
-  -- Optional: Post Stats for that week
-  posts_published INTEGER DEFAULT 0,
-  total_engagements INTEGER DEFAULT 0,
+  -- Calculated (stored for historical tracking)
+  follower_growth INTEGER, -- vs previous week
+  engagement_rate DECIMAL(5,2), -- engagement / impressions * 100
   
   -- Notes
   notes TEXT,
+  skipped BOOLEAN DEFAULT FALSE,
   
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),
@@ -277,7 +281,103 @@ CREATE TABLE public.weekly_metrics (
   UNIQUE(user_id, year, week_number)
 );
 
-CREATE INDEX idx_weekly_metrics_user ON public.weekly_metrics(user_id, year DESC, week_number DESC);
+CREATE INDEX idx_linkedin_metrics_user ON public.linkedin_weekly_metrics(user_id, year DESC, week_number DESC);
+
+-- YouTube Weekly Metrics
+CREATE TABLE public.youtube_weekly_metrics (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+  
+  -- Time Period
+  year INTEGER NOT NULL,
+  week_number INTEGER NOT NULL CHECK (week_number >= 1 AND week_number <= 53),
+  week_start DATE NOT NULL,
+  
+  -- Channel Metrics
+  subscribers INTEGER,
+  views INTEGER,
+  watch_time_hours DECIMAL(10,1), -- in hours
+  avg_view_duration_seconds INTEGER, -- in seconds
+  
+  -- Calculated
+  subscriber_growth INTEGER,
+  
+  -- Notes
+  notes TEXT,
+  skipped BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(user_id, year, week_number)
+);
+
+CREATE INDEX idx_youtube_metrics_user ON public.youtube_weekly_metrics(user_id, year DESC, week_number DESC);
+
+-- Instagram Weekly Metrics
+CREATE TABLE public.instagram_weekly_metrics (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+  
+  -- Time Period
+  year INTEGER NOT NULL,
+  week_number INTEGER NOT NULL CHECK (week_number >= 1 AND week_number <= 53),
+  week_start DATE NOT NULL,
+  
+  -- Profile Metrics
+  followers INTEGER,
+  reach INTEGER,
+  engagement INTEGER, -- likes + comments
+  saves INTEGER,
+  profile_visits INTEGER,
+  
+  -- Calculated
+  follower_growth INTEGER,
+  engagement_rate DECIMAL(5,2),
+  
+  -- Notes
+  notes TEXT,
+  skipped BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(user_id, year, week_number)
+);
+
+CREATE INDEX idx_instagram_metrics_user ON public.instagram_weekly_metrics(user_id, year DESC, week_number DESC);
+
+-- Skool Weekly Metrics
+CREATE TABLE public.skool_weekly_metrics (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+  
+  -- Time Period
+  year INTEGER NOT NULL,
+  week_number INTEGER NOT NULL CHECK (week_number >= 1 AND week_number <= 53),
+  week_start DATE NOT NULL,
+  
+  -- Community Metrics
+  members INTEGER,
+  active_members INTEGER,
+  post_views INTEGER,
+  comments INTEGER,
+  
+  -- Calculated
+  member_growth INTEGER,
+  activity_rate DECIMAL(5,2), -- active_members / members * 100
+  
+  -- Notes
+  notes TEXT,
+  skipped BOOLEAN DEFAULT FALSE,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  
+  UNIQUE(user_id, year, week_number)
+);
+
+CREATE INDEX idx_skool_metrics_user ON public.skool_weekly_metrics(user_id, year DESC, week_number DESC);
 
 -- =============================================
 -- HELPER FUNCTIONS
@@ -391,3 +491,55 @@ CREATE TRIGGER on_post_metrics_update
 -- ALTER TABLE public.drafts ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE public.learning_log ENABLE ROW LEVEL SECURITY;
+
+-- =============================================
+-- 10. STORAGE FOR VIDEO UPLOADS
+-- =============================================
+
+-- Create videos storage bucket (run in Supabase Dashboard or via API)
+-- INSERT INTO storage.buckets (id, name, public) 
+-- VALUES ('videos', 'videos', true)
+-- ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies (run after bucket creation)
+-- Allow anyone to upload videos
+-- CREATE POLICY "Allow public uploads" ON storage.objects
+--   FOR INSERT WITH CHECK (bucket_id = 'videos');
+
+-- Allow public read access
+-- CREATE POLICY "Allow public reads" ON storage.objects
+--   FOR SELECT USING (bucket_id = 'videos');
+
+-- =============================================
+-- 11. CUTTER SHARES (Video Collaboration)
+-- =============================================
+CREATE TABLE public.cutter_shares (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001',
+  
+  -- Post Reference
+  post_id TEXT NOT NULL, -- References local post ID
+  post_title TEXT,
+  
+  -- Sharing
+  password TEXT NOT NULL,
+  share_url TEXT,
+  
+  -- Videos
+  raw_video_url TEXT,
+  final_video_url TEXT,
+  
+  -- Status
+  status TEXT DEFAULT 'pending' 
+    CHECK (status IN ('pending', 'in_progress', 'completed')),
+  
+  -- Notes
+  instructions TEXT,
+  cutter_notes TEXT,
+  
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_cutter_shares_password ON public.cutter_shares(password);
+CREATE INDEX idx_cutter_shares_status ON public.cutter_shares(status);

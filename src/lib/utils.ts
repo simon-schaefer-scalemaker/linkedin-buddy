@@ -65,3 +65,36 @@ export function truncateText(text: string, maxLength: number): string {
 export function getWordCount(text: string): number {
   return text.trim().split(/\s+/).filter(Boolean).length
 }
+
+// Get ISO week number (1-53)
+export function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const dayNum = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+}
+
+// Get the Monday of the week for a given date
+export function getWeekStart(date: Date): string {
+  const d = new Date(date)
+  const day = d.getDay()
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Adjust when day is Sunday
+  d.setDate(diff)
+  return d.toISOString().split('T')[0]
+}
+
+// Format week as "KW 5, 2026"
+export function formatWeek(year: number, weekNumber: number): string {
+  return `KW ${weekNumber}, ${year}`
+}
+
+// Get week range as "27. Jan - 2. Feb"
+export function getWeekRange(weekStart: string): string {
+  const start = new Date(weekStart)
+  const end = new Date(start)
+  end.setDate(end.getDate() + 6)
+  
+  const formatDay = (d: Date) => d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short' })
+  return `${formatDay(start)} - ${formatDay(end)}`
+}

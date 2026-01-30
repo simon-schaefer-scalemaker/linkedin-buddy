@@ -121,35 +121,35 @@ export function CalendarPage() {
   }
 
   return (
-    <div className="space-y-4 h-[calc(100vh-120px)] flex flex-col overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-140px)] -my-4">
       {/* Header with Stats */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between mb-3 shrink-0">
         <div>
           <h1 className="text-[22px] font-medium text-gray-900">Content Kalender</h1>
-          <p className="text-[13px] text-gray-400 mt-1">Plane und verwalte deine Posts</p>
+          <p className="text-[13px] text-gray-400 mt-0.5">Plane und verwalte deine Posts</p>
         </div>
         
         {/* Quick Stats */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-[24px] font-light text-gray-900">{stats.thisWeek}</p>
-            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Diese Woche</p>
+            <p className="text-[20px] font-light text-gray-900">{stats.thisWeek}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Diese Woche</p>
           </div>
-          <div className="w-px h-10 bg-gray-200" />
+          <div className="w-px h-8 bg-gray-200" />
           <div className="text-right">
-            <p className="text-[24px] font-light text-gray-900">{stats.scheduled}</p>
-            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Geplant</p>
+            <p className="text-[20px] font-light text-gray-900">{stats.scheduled}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Geplant</p>
           </div>
-          <div className="w-px h-10 bg-gray-200" />
+          <div className="w-px h-8 bg-gray-200" />
           <div className="text-right">
-            <p className="text-[24px] font-light text-gray-900">{stats.published}</p>
-            <p className="text-[11px] text-gray-400 uppercase tracking-wide">Veröffentlicht</p>
+            <p className="text-[20px] font-light text-gray-900">{stats.published}</p>
+            <p className="text-[10px] text-gray-400 uppercase tracking-wide">Veröffentlicht</p>
           </div>
         </div>
       </div>
 
       {/* Platform Filter Pills */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-3 shrink-0">
         {PLATFORM_ORDER.map(platform => {
           const isSelected = selectedPlatforms.includes(platform)
           const platformPosts = posts.filter(p => p.platform === platform && (p.scheduledFor || p.publishedAt)).length
@@ -159,7 +159,7 @@ export function CalendarPage() {
               key={platform}
               onClick={() => togglePlatform(platform)}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium transition-all",
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all",
                 isSelected 
                   ? "text-white shadow-sm" 
                   : "bg-gray-100 text-gray-500 hover:bg-gray-200"
@@ -169,7 +169,7 @@ export function CalendarPage() {
               <PlatformIcon platform={platform} size="sm" className={isSelected ? 'text-white' : undefined} />
               {PLATFORMS[platform].name}
               <span className={cn(
-                "text-[10px] px-1.5 py-0.5 rounded-full",
+                "text-[9px] px-1 py-0.5 rounded-full",
                 isSelected ? "bg-white/20" : "bg-gray-200"
               )}>
                 {platformPosts}
@@ -179,12 +179,12 @@ export function CalendarPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 flex-1 min-h-0">
         {/* Calendar - Main Content */}
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <Card className="overflow-hidden flex-1 flex flex-col">
             <CardContent className="p-0 flex-1 flex flex-col min-h-0">
-              <div className="calendar-wrapper p-4 flex-1 flex flex-col min-h-0">
+              <div className="calendar-wrapper p-3 flex-1 flex flex-col min-h-0">
                 <FullCalendar
                   plugins={[dayGridPlugin, interactionPlugin]}
                   initialView="dayGridMonth"
@@ -232,26 +232,26 @@ export function CalendarPage() {
         </div>
 
         {/* Sidebar - Upcoming Posts */}
-        <div className="lg:col-span-1 space-y-4 overflow-y-auto min-h-0">
+        <div className="lg:col-span-1 flex flex-col gap-2 min-h-0 overflow-hidden">
           {/* Upcoming Posts Card */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <Clock className="h-4 w-4 text-gray-400" />
-                <h3 className="text-[13px] font-medium text-gray-900">Nächste Posts</h3>
+          <Card className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <CardContent className="p-3 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex items-center gap-2 mb-2 shrink-0">
+                <Clock className="h-3.5 w-3.5 text-gray-400" />
+                <h3 className="text-[12px] font-medium text-gray-900">Nächste Posts</h3>
               </div>
               
               {upcomingPosts.length > 0 ? (
-                <div className="space-y-3">
-                  {upcomingPosts.map(post => (
+                <div className="space-y-1.5 overflow-y-auto flex-1 min-h-0">
+                  {upcomingPosts.slice(0, 4).map(post => (
                     <button
                       key={post.id}
                       onClick={() => navigate(`/boards/${post.platform}/${post.id}`)}
                       className="w-full text-left group"
                     >
-                      <div className="flex items-start gap-3 p-2 -mx-2 rounded-lg transition-colors hover:bg-gray-50">
+                      <div className="flex items-center gap-2 p-1.5 -mx-1.5 rounded-md transition-colors hover:bg-gray-50">
                         <div 
-                          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                          className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
                           style={{ backgroundColor: PLATFORMS[post.platform].color + '15' }}
                         >
                           <PlatformIcon 
@@ -260,98 +260,42 @@ export function CalendarPage() {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-medium text-gray-900 truncate">
+                          <p className="text-[11px] font-medium text-gray-900 truncate">
                             {getPostTitle(post)}
                           </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[11px] text-gray-400">
-                              {getDateLabel(post.scheduledFor!)}
-                            </span>
-                            <span className="text-[11px] text-gray-300">•</span>
-                            <span className="text-[11px] text-gray-400">
-                              {format(new Date(post.scheduledFor!), 'HH:mm', { locale: de })} Uhr
-                            </span>
-                          </div>
+                          <p className="text-[10px] text-gray-400">
+                            {getDateLabel(post.scheduledFor!)} • {format(new Date(post.scheduledFor!), 'HH:mm', { locale: de })}
+                          </p>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-400 transition-colors shrink-0 mt-1" />
                       </div>
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-6">
-                  <CalendarDays className="h-8 w-8 text-gray-200 mx-auto mb-2" />
-                  <p className="text-[12px] text-gray-400">Keine geplanten Posts</p>
+                <div className="text-center py-4 flex-1 flex flex-col items-center justify-center">
+                  <CalendarDays className="h-6 w-6 text-gray-200 mb-1" />
+                  <p className="text-[11px] text-gray-400">Keine geplanten Posts</p>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Platform Legend */}
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-[13px] font-medium text-gray-900 mb-3">Plattformen</h3>
-              <div className="space-y-2">
+          {/* Platform Legend - Compact */}
+          <Card className="shrink-0">
+            <CardContent className="p-3">
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
                 {PLATFORM_ORDER.map(platform => {
                   const count = posts.filter(p => p.platform === platform && (p.scheduledFor || p.publishedAt)).length
                   return (
-                    <div key={platform} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-2.5 h-2.5 rounded-full"
-                          style={{ backgroundColor: PLATFORMS[platform].color }}
-                        />
-                        <span className="text-[12px] text-gray-600">{PLATFORMS[platform].name}</span>
-                      </div>
-                      <span className="text-[11px] text-gray-400">{count} Posts</span>
+                    <div key={platform} className="flex items-center gap-1.5">
+                      <div 
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: PLATFORMS[platform].color }}
+                      />
+                      <span className="text-[10px] text-gray-500">{PLATFORMS[platform].name} ({count})</span>
                     </div>
                   )
                 })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="text-[13px] font-medium text-gray-900 mb-3">Schnellaktionen</h3>
-              <div className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start text-[12px]"
-                  onClick={() => navigate('/boards?platform=linkedin')}
-                >
-                  <PlatformIcon platform="linkedin" size="sm" className="mr-2" />
-                  LinkedIn Post erstellen
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start text-[12px]"
-                  onClick={() => navigate('/boards?platform=youtube')}
-                >
-                  <PlatformIcon platform="youtube" size="sm" className="mr-2" />
-                  YouTube Video planen
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start text-[12px]"
-                  onClick={() => navigate('/boards?platform=instagram')}
-                >
-                  <PlatformIcon platform="instagram" size="sm" className="mr-2" />
-                  Instagram Post erstellen
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start text-[12px]"
-                  onClick={() => navigate('/boards?platform=skool')}
-                >
-                  <PlatformIcon platform="skool" size="sm" className="mr-2" />
-                  Skool Post erstellen
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -379,7 +323,7 @@ export function CalendarPage() {
         }
         
         .calendar-wrapper .fc-toolbar {
-          margin-bottom: 1.5rem !important;
+          margin-bottom: 0.75rem !important;
         }
         
         .calendar-wrapper .fc-toolbar-title {

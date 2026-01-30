@@ -1,11 +1,15 @@
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Plus, Filter, Linkedin, Youtube, Instagram, GraduationCap } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { Plus, Filter, Linkedin, Youtube, Instagram, GraduationCap, Lightbulb, BarChart3, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { KanbanBoard } from '@/components/kanban/kanban-board'
+import { ImportPostWizard } from '@/components/posts/import-post-wizard'
 import { usePostsStore } from '@/lib/store'
 import { PLATFORMS, PLATFORM_ORDER } from '@/lib/constants'
 import type { Post, WorkflowStatusId, PlatformId, LinkedInPost, YouTubePost, InstagramPost, SkoolPost } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { differenceInDays } from 'date-fns'
+import { sendSlackNotification, getSlackWebhookUrl } from '@/lib/slack-notifications'
 
 const platformIcons = {
   linkedin: Linkedin,
@@ -25,6 +29,7 @@ export function BoardsPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const currentPlatform = (searchParams.get('platform') as PlatformId) || 'linkedin'
+  const [importWizardOpen, setImportWizardOpen] = useState(false)
   
   // Get posts from global store
   const allPosts = usePostsStore((state) => state.posts)
@@ -34,6 +39,50 @@ export function BoardsPage() {
   
   // Filter posts by current platform
   const posts = allPosts.filter(p => p.platform === currentPlatform)
+
+  // Check for posts needing metrics and send Slack notification
+  useEffect(() => {
+    const checkAndNotify = async () => {
+      // Only run if Slack is configured
+      if (!getSlackWebhookUrl()) return
+      
+      // Find all posts needing metrics (across all platforms)
+      const postsNeedingMetrics = allPosts
+        .filter(post => {
+          if (post.status !== 'published' || !post.publishedAt) return false
+          const daysSincePublished = differenceInDays(new Date(), new Date(post.publishedAt))
+          const hasMetrics = post.metrics && Object.values(post.metrics).some(v => v && v > 0)
+          return daysSincePublished >= 7 && !hasMetrics
+        })
+        .map(post => {
+          // Extract title based on platform
+          let title = ''
+          if (post.platform === 'linkedin') {
+            title = (post as LinkedInPost).content.hook?.slice(0, 50) || 'LinkedIn Post'
+          } else if (post.platform === 'youtube') {
+            title = (post as YouTubePost).content.title || 'YouTube Video'
+          } else if (post.platform === 'instagram') {
+            title = (post as InstagramPost).content.caption?.slice(0, 50) || 'Instagram Post'
+          } else {
+            title = (post as SkoolPost).content.title || 'Skool Post'
+          }
+          
+          return {
+            id: post.id,
+            platform: post.platform,
+            title,
+            publishedAt: post.publishedAt!,
+            daysAgo: differenceInDays(new Date(), new Date(post.publishedAt!))
+          }
+        })
+      
+      if (postsNeedingMetrics.length > 0) {
+        await sendSlackNotification(postsNeedingMetrics, window.location.origin + '/boards')
+      }
+    }
+    
+    checkAndNotify()
+  }, [allPosts])
 
   const handlePlatformChange = (platform: PlatformId) => {
     setSearchParams({ platform })
@@ -124,16 +173,24 @@ export function BoardsPage() {
   const Icon = platformIcons[currentPlatform]
   const labels = platformLabels[currentPlatform]
 
+  // Find posts that need metrics (published > 7 days ago, no metrics)
+  const postsNeedingMetrics = posts.filter(post => {
+    if (post.status !== 'published' || !post.publishedAt) return false
+    const daysSincePublished = differenceInDays(new Date(), new Date(post.publishedAt))
+    const hasMetrics = post.metrics && Object.values(post.metrics).some(v => v && v > 0)
+    return daysSincePublished >= 7 && !hasMetrics
+  })
+
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)]">
+    <div className="flex flex-col h-[calc(100vh-140px)] -my-4">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex items-center gap-3">
           <div 
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            className="w-9 h-9 rounded-xl flex items-center justify-center"
             style={{ backgroundColor: platformData.color }}
           >
-            <Icon className="h-5 w-5 text-white" />
+            <Icon className="h-4 w-4 text-white" />
           </div>
           <div>
             <h1 className="text-[22px] font-medium text-gray-900">Content Boards</h1>
@@ -141,6 +198,18 @@ export function BoardsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {currentPlatform !== 'skool' && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to={`/brainstorming?platform=${currentPlatform}`}>
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Brainstorming
+              </Link>
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => setImportWizardOpen(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Import
+          </Button>
           <Button variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             Filter
@@ -153,7 +222,7 @@ export function BoardsPage() {
       </div>
 
       {/* Platform Selector */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-3 shrink-0">
         {PLATFORM_ORDER.map((platform) => {
           const PlatformIcon = platformIcons[platform]
           const isActive = platform === currentPlatform
@@ -164,7 +233,7 @@ export function BoardsPage() {
               key={platform}
               onClick={() => handlePlatformChange(platform)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all",
+                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all",
                 isActive 
                   ? "text-white shadow-sm" 
                   : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
@@ -178,6 +247,33 @@ export function BoardsPage() {
         })}
       </div>
 
+      {/* Metrics Reminder Alert */}
+      {postsNeedingMetrics.length > 0 && (
+        <div className="mb-3 shrink-0 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+              <BarChart3 className="h-4 w-4 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-[13px] font-medium text-amber-800">
+                {postsNeedingMetrics.length} {postsNeedingMetrics.length === 1 ? 'Post braucht' : 'Posts brauchen'} Performance-Daten
+              </p>
+              <p className="text-[11px] text-amber-600">
+                Trage die Metriken ein um von der AI zu lernen
+              </p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-amber-300 text-amber-700 hover:bg-amber-100"
+            onClick={() => navigate(`/boards/${currentPlatform}/${postsNeedingMetrics[0].id}`)}
+          >
+            Jetzt eintragen
+          </Button>
+        </div>
+      )}
+
       {/* Kanban Board */}
       <div className="flex-1 min-h-0">
         <KanbanBoard
@@ -189,6 +285,12 @@ export function BoardsPage() {
           onDeletePost={handleDeletePost}
         />
       </div>
+
+      {/* Import Wizard */}
+      <ImportPostWizard 
+        open={importWizardOpen} 
+        onOpenChange={setImportWizardOpen} 
+      />
     </div>
   )
 }
