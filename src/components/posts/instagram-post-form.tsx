@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Save, Trash2, Sparkles, Loader2, Image, MapPin, Check, ChevronDown, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Sparkles, Image, MapPin, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -57,22 +57,22 @@ function WorkflowSection({
       id={`section-${id}`}
       className={cn(
         "border rounded-xl transition-all duration-200 overflow-hidden",
-        isOpen ? "border-gray-200 bg-white shadow-sm" : "border-gray-100 bg-gray-50/30",
+        isOpen ? "border-neutral-600 bg-neutral-800 shadow-lg" : "border-neutral-800 bg-neutral-800/30",
         isComplete && !isOpen && "border-pink-200 bg-pink-50/20"
       )}
     >
       <button
         onClick={onToggle}
         className={cn(
-          "w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-gray-50/50",
-          isOpen && "border-b border-gray-100 hover:bg-transparent"
+          "w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-neutral-800/50/50",
+          isOpen && "border-b border-neutral-800 hover:bg-transparent"
         )}
       >
         <div className={cn(
           "w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
           isOpen && "bg-gradient-to-br from-pink-500 to-purple-600 text-white",
           !isOpen && isComplete && "bg-gradient-to-br from-pink-500 to-purple-600 text-white",
-          !isOpen && !isComplete && "bg-gray-200 text-gray-500"
+          !isOpen && !isComplete && "bg-neutral-700 text-neutral-500"
         )}>
           {isComplete && !isOpen ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
         </div>
@@ -81,7 +81,7 @@ function WorkflowSection({
           <div className="flex items-center gap-2">
             <span className={cn(
               "font-semibold text-[13px] uppercase tracking-wide",
-              isOpen ? "text-gray-900" : isComplete ? "text-pink-700" : "text-gray-500"
+              isOpen ? "text-white" : isComplete ? "text-pink-700" : "text-neutral-500"
             )}>
               {title}
             </span>
@@ -89,7 +89,7 @@ function WorkflowSection({
           {!isOpen && (
             <p className={cn(
               "text-[11px] mt-1 truncate max-w-[500px]",
-              isComplete ? "text-pink-600" : "text-gray-400 italic"
+              isComplete ? "text-pink-600" : "text-neutral-500 italic"
             )}>
               {preview || (isComplete ? "Ausgefüllt" : "Noch nicht ausgefüllt")}
             </p>
@@ -97,7 +97,7 @@ function WorkflowSection({
         </div>
         
         <div className={cn("shrink-0 transition-transform", isOpen && "rotate-180")}>
-          <ChevronDown className={cn("h-5 w-5", isOpen ? "text-gray-600" : "text-gray-400")} />
+          <ChevronDown className={cn("h-5 w-5", isOpen ? "text-neutral-400" : "text-neutral-500")} />
         </div>
       </button>
       
@@ -105,7 +105,7 @@ function WorkflowSection({
         <div className="p-5 space-y-5">
           {children}
           {onNext && nextLabel && (
-            <div className="flex justify-end pt-3 border-t border-gray-100">
+            <div className="flex justify-end pt-3 border-t border-neutral-800">
               <Button onClick={onNext} className="gap-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
                 {nextLabel}
                 <ChevronRight className="h-4 w-4" />
@@ -231,7 +231,7 @@ export function InstagramPostForm() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="flex items-center justify-between shrink-0 pb-4 border-b border-gray-100 mb-4">
+        <div className="flex items-center justify-between shrink-0 pb-4 border-b border-neutral-800 mb-4">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" />
@@ -240,7 +240,7 @@ export function InstagramPostForm() {
               value={(post as any).title || ''}
               onChange={(e) => setPost({ ...post, title: e.target.value } as any)}
               placeholder="Post-Titel eingeben..."
-              className="text-lg font-semibold border-none shadow-none px-0 h-auto focus-visible:ring-0 bg-transparent w-[300px]"
+              className="text-lg font-semibold border-none shadow-none px-3 py-2 h-auto focus-visible:ring-0 bg-transparent w-[300px]"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -264,7 +264,7 @@ export function InstagramPostForm() {
         </div>
 
         {/* Progress Stepper */}
-        <div className="flex items-center gap-2 pb-4 border-b border-gray-100 mb-4 shrink-0">
+        <div className="flex items-center gap-2 pb-4 border-b border-neutral-800 mb-4 shrink-0">
           {WORKFLOW_STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
@@ -273,7 +273,7 @@ export function InstagramPostForm() {
                   "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-[11px] font-medium",
                   activeStep === step.id && "bg-gradient-to-r from-pink-500 to-purple-600 text-white",
                   activeStep !== step.id && isStepComplete(step.id) && "bg-pink-100 text-pink-700 hover:bg-pink-200",
-                  activeStep !== step.id && !isStepComplete(step.id) && "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  activeStep !== step.id && !isStepComplete(step.id) && "bg-neutral-800 text-neutral-500 hover:bg-neutral-700"
                 )}
               >
                 {isStepComplete(step.id) && activeStep !== step.id ? (
@@ -286,7 +286,7 @@ export function InstagramPostForm() {
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div className={cn(
                   "w-8 h-[2px] mx-1",
-                  isStepComplete(step.id) ? "bg-pink-300" : "bg-gray-200"
+                  isStepComplete(step.id) ? "bg-pink-300" : "bg-neutral-700"
                 )} />
               )}
             </div>
@@ -309,7 +309,7 @@ export function InstagramPostForm() {
           >
             {/* Post Type */}
             <div className="space-y-3">
-              <Label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Post-Typ</Label>
+              <Label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Post-Typ</Label>
               <div className="flex gap-2 flex-wrap">
                 {POST_TYPES.map(type => (
                   <Button
@@ -327,7 +327,7 @@ export function InstagramPostForm() {
 
             {/* Caption */}
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Caption</Label>
+              <Label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Caption</Label>
               <Textarea
                 value={post.content.caption || ''}
                 onChange={(e) => updateContent('caption', e.target.value)}
@@ -335,7 +335,7 @@ export function InstagramPostForm() {
                 className="min-h-[200px] text-[13px]"
               />
               <div className="flex items-center justify-between">
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[11px] text-neutral-500">
                   {post.content.caption?.length || 0}/2200 Zeichen
                 </p>
                 <CopyTextButton text={getFullCaption()} label="Kopieren" />
@@ -355,7 +355,7 @@ export function InstagramPostForm() {
           >
             {/* Location */}
             <div className="space-y-2">
-              <Label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Standort (optional)</Label>
+              <Label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Standort (optional)</Label>
               <Input
                 value={post.content.location || ''}
                 onChange={(e) => updateContent('location', e.target.value)}
@@ -364,12 +364,12 @@ export function InstagramPostForm() {
             </div>
 
             {/* Preview */}
-            <div className="space-y-2 pt-4 border-t border-gray-100">
+            <div className="space-y-2 pt-4 border-t border-neutral-800">
               <div className="flex items-center justify-between">
-                <Label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">Vorschau</Label>
+                <Label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">Vorschau</Label>
                 <CopyTextButton text={getFullCaption()} label="Kopieren" />
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg whitespace-pre-wrap text-[13px] text-gray-700 leading-relaxed min-h-[100px]">
+              <div className="p-4 bg-neutral-800/50 rounded-lg whitespace-pre-wrap text-[13px] text-neutral-300 leading-relaxed min-h-[100px]">
                 {getFullCaption() || 'Beginne mit dem Schreiben...'}
               </div>
             </div>

@@ -2,16 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { 
   ArrowLeft, 
-  Save, 
   Trash2, 
   Sparkles,
-  Workflow,
-  Image,
   FileText,
-  ListChecks,
-  MessageSquare,
   MessageCircle,
-  Gem,
   Link2,
   Copy,
   Check,
@@ -20,9 +14,7 @@ import {
   ExternalLink,
   Upload,
   Share2,
-  Video,
   Loader2,
-  Clock,
   CheckCircle2,
   Settings2,
   Pencil,
@@ -31,22 +23,20 @@ import {
   ChevronDown,
   Target,
   TrendingUp,
-  TrendingDown,
   Minus,
   Package
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { PostSidebar } from './post-sidebar'
 import { AiChatPanel } from './ai-chat-panel'
 import { usePostsStore, useTemplatesStore, useCutterSharesStore, useGlobalSettingsStore, type TemplateCategory, type Template } from '@/lib/store'
 import type { LinkedInPost, WorkflowStatusId, ContentTagId } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { uploadVideo, validateVideoFile, formatFileSize, isSupabaseConfigured } from '@/lib/video-upload'
-import { sendMessage, isApiConfigured } from '@/lib/claude-api'
+import { uploadVideo, validateVideoFile, isSupabaseConfigured } from '@/lib/video-upload'
+import { sendMessage } from '@/lib/claude-api'
 import { buildHypothesisPrompt, buildLearningPrompt } from '@/lib/ai-prompts'
 
 // Workflow Step IDs
@@ -57,14 +47,6 @@ const WORKFLOW_STEPS: { id: StepId; title: string; icon: React.ElementType }[] =
   { id: 'strategy', title: 'Strategie', icon: Target },
   { id: 'content', title: 'Content', icon: FileText },
   { id: 'assets', title: 'Assets', icon: Package },
-]
-
-// Template Categories Config
-const TEMPLATE_CATEGORIES: { id: TemplateCategory; name: string; icon: React.ElementType; color: string; bgColor: string }[] = [
-  { id: 'reply', name: 'Reply', icon: MessageSquare, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-  { id: 'comment', name: 'Comments', icon: MessageCircle, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-  { id: 'resource', name: 'Ressource', icon: Gem, color: 'text-cyan-600', bgColor: 'bg-cyan-100' },
-  { id: 'affiliate', name: 'Affiliate Link', icon: Link2, color: 'text-rose-600', bgColor: 'bg-rose-100' },
 ]
 
 // Workflow Section Component (Collapsible Accordion)
@@ -79,6 +61,7 @@ function WorkflowSection({
   onToggle,
   onNext,
   nextLabel,
+  nextDisabled,
   children
 }: { 
   id: string
@@ -91,6 +74,7 @@ function WorkflowSection({
   onToggle: () => void
   onNext?: () => void
   nextLabel?: string
+  nextDisabled?: boolean
   children: React.ReactNode
 }) {
   return (
@@ -98,24 +82,28 @@ function WorkflowSection({
       id={`section-${id}`}
       className={cn(
         "border rounded-xl transition-all duration-200 overflow-hidden",
-        isOpen ? "border-gray-200 bg-white shadow-sm" : "border-gray-100 bg-gray-50/30",
-        isComplete && !isOpen && "border-green-200 bg-green-50/20"
+        // Light mode
+        isOpen ? "border-neutral-300 bg-white shadow-lg" : "border-neutral-200 bg-neutral-50",
+        // Dark mode
+        isOpen ? "dark:border-neutral-600 dark:bg-neutral-800" : "dark:border-neutral-800 dark:bg-neutral-800/30",
+        isComplete && !isOpen && "border-green-500/30 bg-green-50 dark:border-green-500/30 dark:bg-green-500/10"
       )}
     >
       {/* Clickable Header */}
       <button
         onClick={onToggle}
         className={cn(
-          "w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-gray-50/50",
-          isOpen && "border-b border-gray-100 hover:bg-transparent"
+          "w-full flex items-center gap-3 p-4 text-left transition-colors",
+          "hover:bg-neutral-100 dark:hover:bg-neutral-800/50",
+          isOpen && "border-b border-neutral-200 dark:border-neutral-800 hover:bg-transparent dark:hover:bg-transparent"
         )}
       >
         {/* Status Icon */}
         <div className={cn(
           "w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-          isOpen && "bg-gray-900 text-white",
+          isOpen && "bg-neutral-900 text-white dark:bg-neutral-700",
           !isOpen && isComplete && "bg-green-500 text-white",
-          !isOpen && !isComplete && "bg-gray-200 text-gray-500"
+          !isOpen && !isComplete && "bg-neutral-200 text-neutral-500 dark:bg-neutral-700"
         )}>
           {isComplete && !isOpen ? (
             <Check className="h-4 w-4" />
@@ -129,7 +117,7 @@ function WorkflowSection({
           <div className="flex items-center gap-2">
             <span className={cn(
               "font-semibold text-[13px] uppercase tracking-wide",
-              isOpen ? "text-gray-900" : isComplete ? "text-green-700" : "text-gray-500"
+              isOpen ? "text-neutral-900 dark:text-white" : isComplete ? "text-green-700" : "text-neutral-500"
             )}>
               {title}
             </span>
@@ -144,7 +132,7 @@ function WorkflowSection({
           {!isOpen && (
             <p className={cn(
               "text-[11px] mt-1 truncate max-w-[500px]",
-              isComplete ? "text-green-600" : "text-gray-400 italic"
+              isComplete ? "text-green-600" : "text-neutral-500 italic"
             )}>
               {preview || (isComplete ? "Ausgefüllt" : "Noch nicht ausgefüllt")}
             </p>
@@ -155,20 +143,24 @@ function WorkflowSection({
         <div className={cn("shrink-0 transition-transform", isOpen && "rotate-180")}>
           <ChevronDown className={cn(
             "h-5 w-5",
-            isOpen ? "text-gray-600" : "text-gray-400"
+            isOpen ? "text-neutral-400" : "text-neutral-500"
           )} />
         </div>
       </button>
       
       {/* Collapsible Content */}
       {isOpen && (
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-5 bg-[#191919] text-neutral-200 rounded-b-xl">
           {children}
           
           {/* Next Step Button */}
-          {onNext && nextLabel && (
-            <div className="flex justify-end pt-3 border-t border-gray-100">
-              <Button onClick={onNext} className="gap-2">
+          {nextLabel && (
+            <div className="flex justify-end pt-3 border-t border-[#333]">
+              <Button 
+                onClick={onNext} 
+                disabled={nextDisabled || !onNext}
+                className="gap-2"
+              >
                 {nextLabel}
                 <ChevronRight className="h-4 w-4" />
               </Button>
@@ -176,38 +168,6 @@ function WorkflowSection({
           )}
         </div>
       )}
-    </div>
-  )
-}
-
-// Legacy Section (for non-workflow sections)
-function Section({ 
-  title, 
-  icon: Icon, 
-  children,
-  action
-}: { 
-  title: string
-  icon: React.ElementType
-  children: React.ReactNode
-  action?: React.ReactNode
-}) {
-  return (
-    <div className="group">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-sm">
-            <Icon className="h-4 w-4 text-white" />
-          </div>
-          <h3 className="text-[13px] font-semibold text-gray-900 uppercase tracking-wide">{title}</h3>
-        </div>
-        {action}
-      </div>
-      <div className="bg-white rounded-xl border border-gray-200/80 shadow-sm overflow-hidden">
-        <div className="p-5">
-          {children}
-        </div>
-      </div>
     </div>
   )
 }
@@ -231,7 +191,7 @@ function CopyBtn({ text, className, variant = 'default' }: { text: string; class
           "p-2 rounded-lg transition-all",
           copied 
             ? "bg-green-100 text-green-600" 
-            : "hover:bg-gray-100 text-gray-400 hover:text-gray-600",
+            : "hover:bg-neutral-800 text-neutral-500 hover:text-neutral-400",
           className
         )}
       >
@@ -283,10 +243,10 @@ function QuickCommentCard({ text }: { text: string }) {
         "group/card relative p-3 rounded-xl text-left transition-all duration-200",
         copied 
           ? "bg-green-50 ring-2 ring-green-200" 
-          : "bg-gray-50/80 hover:bg-gray-100 hover:shadow-sm"
+          : "bg-neutral-800/50/80 hover:bg-neutral-800 hover:shadow-sm"
       )}
     >
-      <p className="text-[13px] text-gray-700 font-medium">{text}</p>
+      <p className="text-[13px] text-neutral-300 font-medium">{text}</p>
       <div className={cn(
         "absolute top-2 right-2 transition-opacity duration-200",
         copied ? "opacity-100" : "opacity-0 group-hover/card:opacity-100"
@@ -294,7 +254,7 @@ function QuickCommentCard({ text }: { text: string }) {
         {copied ? (
           <Check className="h-3.5 w-3.5 text-green-600" />
         ) : (
-          <Copy className="h-3.5 w-3.5 text-gray-400" />
+          <Copy className="h-3.5 w-3.5 text-neutral-500" />
         )}
       </div>
     </button>
@@ -319,7 +279,7 @@ function LabeledInput({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+      <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
         {label}
       </label>
       <div className="flex gap-2">
@@ -328,7 +288,7 @@ function LabeledInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 h-11 bg-gray-50/50 border-gray-200 focus:bg-white transition-colors"
+          className="flex-1 h-11 bg-neutral-50 border-neutral-200 focus:bg-white dark:bg-neutral-800/50 dark:border-neutral-700 dark:focus:bg-neutral-700 transition-colors"
         />
         {action}
       </div>
@@ -386,7 +346,6 @@ export function LinkedInPostForm() {
   const [templateFormData, setTemplateFormData] = useState({ name: '', content: '' })
   
   // Template store
-  const allTemplates = useTemplatesStore((state) => state.templates)
   const addTemplate = useTemplatesStore((state) => state.addTemplate)
   const updateTemplate = useTemplatesStore((state) => state.updateTemplate)
   const deleteTemplate = useTemplatesStore((state) => state.deleteTemplate)
@@ -438,10 +397,16 @@ Simon`)
   const [newAffiliateUrl, setNewAffiliateUrl] = useState('')
   
   // Strategy section (Hypothesis-First System)
+  const [idea, setIdea] = useState('')
   const [hypothesis, setHypothesis] = useState('')
   const [expectedPerformance, setExpectedPerformance] = useState<'above' | 'average' | 'test'>('average')
   const [referencePostId, setReferencePostId] = useState('')
   const [isGeneratingHypothesis, setIsGeneratingHypothesis] = useState(false)
+  
+  // Post Metadata for AI Learning
+  const [hookType, setHookType] = useState<HookType | undefined>(undefined)
+  const [topic, setTopic] = useState<ContentTopic | undefined>(undefined)
+  const [format, setFormat] = useState<ContentFormat | undefined>(undefined)
   
   // Workflow Step Navigation
   const [activeStep, setActiveStep] = useState<StepId>('strategy')
@@ -566,9 +531,14 @@ Simon`)
       if ((storePost as any).affiliateUrl) setAffiliateUrl((storePost as any).affiliateUrl)
       if ((storePost as any).loomBulletpoints) setLoomBulletpoints((storePost as any).loomBulletpoints)
       // Load strategy data
+      if ((storePost as any).idea) setIdea((storePost as any).idea)
       if ((storePost as any).hypothesis) setHypothesis((storePost as any).hypothesis)
       if ((storePost as any).expectedPerformance) setExpectedPerformance((storePost as any).expectedPerformance)
       if ((storePost as any).referencePostId) setReferencePostId((storePost as any).referencePostId)
+      // Load post metadata for AI learning
+      if ((storePost as any).hookType) setHookType((storePost as any).hookType)
+      if ((storePost as any).topic) setTopic((storePost as any).topic)
+      if ((storePost as any).format) setFormat((storePost as any).format)
       // Load post analysis data
       if ((storePost as any).performanceRating) setPerformanceRating((storePost as any).performanceRating)
       if ((storePost as any).learning) setLearning((storePost as any).learning)
@@ -578,12 +548,6 @@ Simon`)
   }, [id, storePost])
 
   const handleSave = async () => {
-    // Validate hypothesis (required field)
-    if (!hypothesis.trim()) {
-      alert('Bitte gib eine Hypothese ein: Warum wird dieser Post funktionieren?')
-      return
-    }
-    
     setIsSaving(true)
     const extendedPost = {
       ...post,
@@ -595,9 +559,14 @@ Simon`)
       affiliateUrl,
       loomBulletpoints,
       // Strategy data
+      idea,
       hypothesis,
       expectedPerformance,
       referencePostId: referencePostId || null,
+      // Post metadata for AI learning
+      hookType: hookType || undefined,
+      topic: topic || undefined,
+      format: format || undefined,
       // Post analysis data
       performanceRating,
       learning,
@@ -618,6 +587,31 @@ Simon`)
     await new Promise(resolve => setTimeout(resolve, 300))
     setIsSaving(false)
   }
+
+  // Auto-save when content changes
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  useEffect(() => {
+    // Skip auto-save on initial load
+    if (!post.id) return
+    
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
+    }
+    
+    // Set new timeout for auto-save (1 second debounce)
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      handleSave()
+    }, 1000)
+    
+    // Cleanup on unmount
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current)
+      }
+    }
+  }, [title, idea, hypothesis, expectedPerformance, referencePostId, hookType, topic, format, post.content, performanceRating, learning])
   
   const handleDelete = () => {
     if (confirm('Post wirklich löschen?')) {
@@ -822,66 +816,59 @@ Simon`)
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Header */}
-        <div className="flex items-center justify-between pb-5 shrink-0 border-b border-gray-100 mb-5">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={handleBack}
-              className="p-2 -ml-2 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5 text-gray-500" />
-            </button>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Post-Titel eingeben..."
-              className="text-lg font-semibold border-none shadow-none px-0 h-auto focus-visible:ring-0 bg-transparent w-[350px] text-gray-900"
-            />
-          </div>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 pb-5 shrink-0 mb-5">
+          <button 
+            onClick={handleBack}
+            className="p-2 -ml-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5 text-neutral-400" />
+          </button>
+          
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Post-Titel eingeben..."
+            className="flex-1 text-xl font-semibold border-none shadow-none px-3 py-2 h-auto focus-visible:ring-0 bg-transparent text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-600"
+          />
+          
+          <div className="flex items-center gap-2 shrink-0">
             <Button 
               variant="outline" 
               size="sm" 
               onClick={() => setIsAiChatOpen(true)}
-              className="gap-2 bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200 hover:border-orange-300 text-orange-700"
+              className="gap-2"
             >
               <Sparkles className="h-4 w-4" />
               AI Assistent
             </Button>
+            {isSaving && (
+              <span className="text-[11px] text-neutral-500 flex items-center gap-1.5">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Speichert...
+              </span>
+            )}
             <Button 
               variant="ghost" 
               size="icon"
-              className="text-gray-400 hover:text-red-600 hover:bg-red-50" 
+              className="text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 dark:hover:text-red-400"
               onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={handleSave} 
-              disabled={isSaving}
-              className="gap-2 bg-gray-900 hover:bg-gray-800"
-            >
-              {isSaving ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="h-4 w-4" />
-              )}
-              Speichern
             </Button>
           </div>
         </div>
 
         {/* Progress Stepper */}
-        <div className="flex items-center gap-2 pb-4 border-b border-gray-100 mb-4 shrink-0">
+        <div className="flex items-center gap-2 pb-4 border-b border-neutral-200 dark:border-neutral-800 mb-4 shrink-0">
           {WORKFLOW_STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
                 onClick={() => setActiveStep(step.id)}
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-[11px] font-medium",
-                  activeStep === step.id && "bg-gray-900 text-white",
+                  activeStep === step.id && "bg-neutral-900 text-white dark:bg-white dark:text-black",
                   activeStep !== step.id && isStepComplete(step.id) && "bg-green-100 text-green-700 hover:bg-green-200",
-                  activeStep !== step.id && !isStepComplete(step.id) && "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  activeStep !== step.id && !isStepComplete(step.id) && "bg-neutral-100 text-neutral-500 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                 )}
               >
                 {isStepComplete(step.id) && activeStep !== step.id ? (
@@ -894,7 +881,7 @@ Simon`)
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div className={cn(
                   "w-8 h-[2px] mx-1",
-                  isStepComplete(step.id) ? "bg-green-300" : "bg-gray-200"
+                  isStepComplete(step.id) ? "bg-green-300" : "bg-neutral-300 dark:bg-neutral-700"
                 )} />
               )}
             </div>
@@ -914,29 +901,42 @@ Simon`)
             preview={getStepPreview('strategy')}
             required={true}
             onToggle={() => setActiveStep(activeStep === 'strategy' ? activeStep : 'strategy')}
-            onNext={goToNextStep}
+            onNext={hypothesis.trim() ? goToNextStep : undefined}
             nextLabel="Weiter: Content"
+            nextDisabled={!hypothesis.trim()}
           >
             <div className="space-y-4">
+              {/* Idea - First Step */}
+              <div className="space-y-2">
+                <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+                  Idee: Worüber möchtest du posten?
+                </label>
+                <Textarea
+                  value={idea}
+                  onChange={(e) => setIdea(e.target.value)}
+                  placeholder="Worum soll es in deinem nächsten Post gehen?"
+                  className="min-h-[80px] text-[13px] leading-relaxed resize-none bg-[#252525] border-[#333] text-white placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-0"
+                />
+              </div>
+
               {/* Hypothesis */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
                     Hypothese: Warum wird dieser Post funktionieren?
                   </label>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      if (!isApiConfigured()) {
-                        alert('Bitte konfiguriere deinen API-Key in den Einstellungen.')
+                      if (!idea.trim()) {
+                        alert('Bitte gib erst eine Idee ein, damit die AI eine Hypothese generieren kann.')
                         return
                       }
                       
                       setIsGeneratingHypothesis(true)
                       try {
-                        const currentContent = post.content?.text || ''
-                        const { systemPrompt, userPrompt } = buildHypothesisPrompt('linkedin', allPosts, currentContent)
+                        const { systemPrompt, userPrompt } = buildHypothesisPrompt('linkedin', allPosts, idea)
                         
                         const response = await sendMessage({
                           systemPrompt,
@@ -944,9 +944,9 @@ Simon`)
                         })
                         
                         setHypothesis(response.trim())
-                      } catch (err) {
+                      } catch (err: any) {
                         console.error('Failed to generate hypothesis:', err)
-                        setHypothesis('Dieser Post wird funktionieren, weil er [Muster aus deinen Winner-Posts] nutzt.')
+                        alert(err?.message || 'AI-Vorschlag konnte nicht generiert werden.')
                       } finally {
                         setIsGeneratingHypothesis(false)
                       }
@@ -967,72 +967,17 @@ Simon`)
                   onChange={(e) => setHypothesis(e.target.value)}
                   placeholder="z.B. 'Carousel-Posts mit konkreten Zahlen performen 40% besser. Dieser Post nutzt 5 konkrete Statistiken im Slider-Format.'"
                   className={cn(
-                    "min-h-[100px] text-[13px] leading-relaxed resize-none transition-colors",
+                    "min-h-[100px] text-[13px] leading-relaxed resize-none transition-colors text-white placeholder:text-neutral-500 focus:ring-0",
                     hypothesis.trim() 
-                      ? "bg-green-50/50 border-green-200 focus:bg-white" 
-                      : "bg-amber-50/50 border-amber-200 focus:bg-white"
+                      ? "bg-[#252525] border-green-600/50 focus:border-green-500" 
+                      : "bg-[#252525] border-amber-600/50 focus:border-amber-500"
                   )}
                 />
                 {!hypothesis.trim() && (
-                  <p className="text-[11px] text-amber-600">
-                    ⚠️ Ohne Hypothese kannst du den Post nicht speichern
+                  <p className="text-[11px] text-amber-500">
+                    ⚠️ Ohne Hypothese kannst du nicht zum nächsten Schritt
                   </p>
                 )}
-              </div>
-              
-              {/* Expected Performance */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
-                  Erwartete Performance
-                </label>
-                <div className="flex gap-2">
-                  {[
-                    { id: 'above', label: 'Überdurchschnittlich', icon: TrendingUp, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
-                    { id: 'average', label: 'Durchschnitt', icon: Minus, color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' },
-                    { id: 'test', label: 'Test/Experiment', icon: Target, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
-                  ].map((option) => (
-                    <button
-                      key={option.id}
-                      onClick={() => setExpectedPerformance(option.id as 'above' | 'average' | 'test')}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border-2 transition-all text-[12px] font-medium",
-                        expectedPerformance === option.id
-                          ? `${option.bgColor} ${option.borderColor} ${option.color}`
-                          : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
-                      )}
-                    >
-                      <option.icon className="h-4 w-4" />
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Reference Post */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
-                  Referenz-Post (Optional)
-                </label>
-                <select
-                  value={referencePostId}
-                  onChange={(e) => setReferencePostId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-gray-50/50 text-[13px] text-gray-700 focus:bg-white focus:border-gray-300 transition-colors"
-                >
-                  <option value="">Kein Referenz-Post</option>
-                  {allPosts
-                    .filter(p => p.platform === 'linkedin' && p.status === 'published' && p.id !== post.id)
-                    .slice(0, 10)
-                    .map(p => (
-                      <option key={p.id} value={p.id}>
-                        {(p as any).title || p.content?.text?.slice(0, 50) || 'Untitled'} 
-                        {p.metrics?.impressions ? ` (${p.metrics.impressions.toLocaleString()} Impressions)` : ''}
-                      </option>
-                    ))
-                  }
-                </select>
-                <p className="text-[11px] text-gray-400">
-                  Wähle einen erfolgreichen Post als Vorlage/Inspiration
-                </p>
               </div>
             </div>
           </WorkflowSection>
@@ -1050,8 +995,8 @@ Simon`)
             nextLabel="Weiter: Assets"
           >
             {/* Workflow URL - compact */}
-            <div className="space-y-2 pb-4 border-b border-gray-100">
-              <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+            <div className="space-y-2 pb-4 border-b border-neutral-200 dark:border-neutral-800">
+              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                 Workflow URL (optional)
               </label>
               <div className="flex gap-2">
@@ -1087,7 +1032,7 @@ Simon`)
                     "relative border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-200",
                     isDragging 
                       ? "border-orange-400 bg-orange-50" 
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                      : "border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:border-neutral-600 dark:hover:bg-neutral-800/50"
                   )}
                 >
                   {isUploading ? (
@@ -1096,10 +1041,10 @@ Simon`)
                         <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
                       </div>
                       <div>
-                        <p className="text-[14px] font-medium text-gray-700">Wird hochgeladen...</p>
-                        <p className="text-[12px] text-gray-500 mt-1">{uploadProgress}%</p>
+                        <p className="text-[14px] font-medium text-neutral-300">Wird hochgeladen...</p>
+                        <p className="text-[12px] text-neutral-500 mt-1">{uploadProgress}%</p>
                       </div>
-                      <div className="w-48 h-1.5 bg-gray-200 rounded-full mx-auto overflow-hidden">
+                      <div className="w-48 h-1.5 bg-neutral-700 rounded-full mx-auto overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-300" 
                           style={{ width: `${uploadProgress}%` }}
@@ -1108,16 +1053,16 @@ Simon`)
                     </div>
                   ) : (
                     <>
-                      <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-                        <Upload className="h-7 w-7 text-gray-400" />
+                      <div className="w-16 h-16 mx-auto rounded-2xl bg-neutral-800 flex items-center justify-center mb-4">
+                        <Upload className="h-7 w-7 text-neutral-500" />
                       </div>
-                      <p className="text-[14px] font-medium text-gray-700">
+                      <p className="text-[14px] font-medium text-neutral-300">
                         Rohmaterial hochladen
                       </p>
-                      <p className="text-[12px] text-gray-400 mt-1">
+                      <p className="text-[12px] text-neutral-500 mt-1">
                         Ziehe ein Video hierher oder klicke zum Auswählen
                       </p>
-                      <p className="text-[11px] text-gray-400 mt-3">
+                      <p className="text-[11px] text-neutral-500 mt-3">
                         MP4, MOV, WebM • Max. 500MB
                       </p>
                     </>
@@ -1136,13 +1081,13 @@ Simon`)
               ) : (
                 <div className="space-y-4">
                   {/* Video Preview Card */}
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-gray-50 to-gray-100/50 border border-gray-200">
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-neutral-800/50 to-neutral-900/50 border border-neutral-700">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center shadow-sm">
                       <Play className="h-6 w-6 text-white ml-0.5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-gray-900">Rohmaterial</p>
-                      <p className="text-[11px] text-gray-500 truncate mt-0.5">{mediaFile}</p>
+                      <p className="text-[13px] font-semibold text-white">Rohmaterial</p>
+                      <p className="text-[11px] text-neutral-500 truncate mt-0.5">{mediaFile}</p>
                     </div>
                     <div className="flex items-center gap-1">
                       <Button 
@@ -1214,7 +1159,7 @@ Simon`)
               
               {/* Manual Mode Warning */}
               {!isSupabaseConfigured() && !mediaFile && (
-                <div className="space-y-3 pt-4 border-t border-gray-100">
+                <div className="space-y-3 pt-4 border-t border-neutral-200 dark:border-neutral-800">
                   <p className="text-[11px] text-amber-600 font-medium">
                     ⚠️ Manueller Modus (Supabase nicht konfiguriert)
                   </p>
@@ -1228,12 +1173,12 @@ Simon`)
               )}
 
             {/* LinkedIn Post Text */}
-            <div className="pt-4 border-t border-gray-100 space-y-4">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-4">
               <Textarea
                 value={getFullPostText()}
                 onChange={(e) => updateContent('text', e.target.value)}
                 placeholder="Schreibe deinen LinkedIn Post..."
-                className="min-h-[220px] text-[14px] leading-relaxed resize-none bg-gray-50/50 border-gray-200 focus:bg-white transition-colors"
+                className="min-h-[220px] text-[14px] leading-relaxed resize-none bg-neutral-50 border-neutral-200 focus:bg-white dark:bg-neutral-800/50 dark:border-neutral-700 dark:focus:bg-neutral-700 transition-colors"
               />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -1243,12 +1188,12 @@ Simon`)
                       ? "bg-red-100 text-red-700" 
                       : charCount > 2500 
                         ? "bg-amber-100 text-amber-700" 
-                        : "bg-gray-100 text-gray-600"
+                        : "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400"
                   )}>
                     {charCount.toLocaleString()} / 3.000
                   </span>
                   {charCount > 0 && charCount <= 2500 && (
-                    <span className="text-[11px] text-gray-400">Gute Länge</span>
+                    <span className="text-[11px] text-neutral-500">Gute Länge</span>
                   )}
                 </div>
                 <CopyBtn text={getFullPostText()} />
@@ -1256,8 +1201,8 @@ Simon`)
             </div>
 
             {/* Loom Bulletpoints */}
-            <div className="pt-4 border-t border-gray-100">
-              <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3 block">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
+              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider mb-3 block">
                 Loom Bulletpoints
               </label>
               <div className="space-y-4">
@@ -1266,15 +1211,15 @@ Simon`)
                   {loomBulletpoints.map((point, index) => (
                     <div 
                       key={index} 
-                      className="group flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="group flex items-center gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors"
                     >
-                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[11px] font-semibold text-gray-600">
+                      <div className="w-6 h-6 rounded-full bg-neutral-700 flex items-center justify-center text-[11px] font-semibold text-neutral-400">
                         {index + 1}
                       </div>
-                      <span className="flex-1 text-[13px] text-gray-700">{point}</span>
+                      <span className="flex-1 text-[13px] text-neutral-300">{point}</span>
                       <button 
                         onClick={() => removeBulletpoint(index)}
-                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-100 text-gray-400 hover:text-red-500 transition-all"
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md hover:bg-red-100 text-neutral-500 hover:text-red-500 transition-all"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -1288,7 +1233,7 @@ Simon`)
                   onChange={(e) => setNewBulletpoint(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addBulletpoint()}
                   placeholder="Neuen Punkt hinzufügen..."
-                  className="flex-1 h-11 bg-gray-50/50"
+                  className="flex-1 h-11"
                 />
                 <Button 
                   variant="outline"
@@ -1318,12 +1263,12 @@ Simon`)
               {/* Template */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Vorlage
                   </label>
                   <div className="flex flex-wrap gap-1">
                     {['[NAME]', '[LEADMAGNET]', '[VIDEO]', '[SOLUTION]'].map((tag) => (
-                      <span key={tag} className="px-1.5 py-0.5 rounded bg-gray-100 text-[9px] font-mono text-gray-500">
+                      <span key={tag} className="px-1.5 py-0.5 rounded bg-neutral-800 text-[9px] font-mono text-neutral-500">
                         {tag}
                       </span>
                     ))}
@@ -1332,7 +1277,7 @@ Simon`)
                 <Textarea
                   value={dmReply}
                   onChange={(e) => setDmReply(e.target.value)}
-                  className="min-h-[160px] text-[13px] leading-relaxed bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
+                  className="min-h-[160px] text-[13px] leading-relaxed bg-neutral-50 border-neutral-200 focus:bg-white dark:bg-neutral-800/50 dark:border-neutral-700 dark:focus:bg-neutral-700 transition-colors resize-none"
                 />
               </div>
               
@@ -1367,10 +1312,10 @@ Simon`)
               {/* Preview */}
               {(dmName || dmLeadmagnet || dmVideo || dmSolution) && (
                 <div className="space-y-2">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Vorschau
                   </label>
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 border border-gray-200 text-[13px] text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 border border-neutral-700 text-[13px] text-neutral-300 whitespace-pre-wrap leading-relaxed">
                     {getDmReplyMessage()}
                   </div>
                 </div>
@@ -1380,14 +1325,14 @@ Simon`)
             </div>
 
             {/* Quick Comments */}
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Quick Comments
                 </label>
                 <button 
                   onClick={() => setIsTemplateManagerOpen(true)}
-                  className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                  className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-500 hover:text-neutral-300 transition-colors"
                 >
                   <Settings2 className="h-3.5 w-3.5" />
                   Verwalten
@@ -1411,12 +1356,12 @@ Simon`)
             </div>
 
             {/* Resource */}
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Ressource teilen
                 </label>
-                <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                <span className="text-[10px] text-neutral-500 bg-neutral-800 px-2 py-0.5 rounded">
                   Global gespeichert
                 </span>
               </div>
@@ -1424,12 +1369,12 @@ Simon`)
               {/* Template Text */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Vorlage (für alle Karten)
                   </label>
                   <div className="flex gap-1.5">
                     {['[NAME]', '[LINK]'].map((tag) => (
-                      <span key={tag} className="px-2 py-0.5 rounded bg-gray-100 text-[10px] font-mono text-gray-500">
+                      <span key={tag} className="px-2 py-0.5 rounded bg-neutral-800 text-[10px] font-mono text-neutral-500">
                         {tag}
                       </span>
                     ))}
@@ -1438,7 +1383,7 @@ Simon`)
                 <Textarea
                   value={globalResourceTemplate}
                   onChange={(e) => setGlobalResourceTemplate(e.target.value)}
-                  className="min-h-[120px] text-[14px] leading-relaxed bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
+                  className="min-h-[120px] text-[14px] leading-relaxed bg-neutral-50 border-neutral-200 focus:bg-white dark:bg-neutral-800/50 dark:border-neutral-700 dark:focus:bg-neutral-700 transition-colors resize-none"
                 />
               </div>
               
@@ -1461,10 +1406,10 @@ Simon`)
               {/* Preview */}
               {(resourceName || resourceUrl) && (
                 <div className="space-y-2">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Vorschau
                   </label>
-                  <div className="p-4 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 border border-gray-200 text-[13px] text-gray-700 whitespace-pre-wrap leading-relaxed">
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-neutral-800/50 to-neutral-900/50 border border-neutral-700 text-[13px] text-neutral-300 whitespace-pre-wrap leading-relaxed">
                     {getResourceMessage()}
                   </div>
                 </div>
@@ -1475,12 +1420,12 @@ Simon`)
             </div>
 
             {/* Affiliate Links */}
-            <div className="pt-4 border-t border-gray-100">
+            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800">
               <div className="flex items-center justify-between mb-3">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Affiliate Links
                 </label>
-                <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                <span className="text-[10px] text-neutral-500 bg-neutral-800 px-2 py-0.5 rounded">
                   Global gespeichert
                 </span>
               </div>
@@ -1519,8 +1464,8 @@ Simon`)
               )}
               
               {/* Add New Link */}
-              <div className="p-4 rounded-xl border border-dashed border-gray-300 bg-gray-50/50">
-                <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-3">
+              <div className="p-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 dark:border-neutral-600 dark:bg-neutral-800/50">
+                <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider mb-3">
                   Neuen Link hinzufügen
                 </p>
                 <div className="flex gap-2">
@@ -1528,13 +1473,13 @@ Simon`)
                     value={newAffiliateName}
                     onChange={(e) => setNewAffiliateName(e.target.value)}
                     placeholder="Name (z.B. Weavy.ai)"
-                    className="h-10 flex-1 bg-white"
+                    className="h-10 flex-1"
                   />
                   <Input
                     value={newAffiliateUrl}
                     onChange={(e) => setNewAffiliateUrl(e.target.value)}
                     placeholder="https://..."
-                    className="h-10 flex-[2] bg-white"
+                    className="h-10 flex-[2]"
                   />
                   <Button
                     onClick={handleAddAffiliateLink}
@@ -1547,7 +1492,7 @@ Simon`)
               </div>
               
               {affiliateLinks.length === 0 && (
-                <p className="text-[12px] text-gray-400 text-center py-2">
+                <p className="text-[12px] text-neutral-500 text-center py-2">
                   Noch keine Affiliate Links gespeichert
                 </p>
               )}
@@ -1641,28 +1586,28 @@ Simon`)
               <div className="w-16 h-16 mx-auto rounded-2xl bg-green-100 flex items-center justify-center mb-4">
                 <CheckCircle2 className="h-8 w-8 text-green-500" />
               </div>
-              <p className="text-[16px] font-semibold text-gray-900">Erfolgreich geteilt!</p>
-              <p className="text-[13px] text-gray-500 mt-2">
+              <p className="text-[16px] font-semibold text-white">Erfolgreich geteilt!</p>
+              <p className="text-[13px] text-neutral-500 mt-2">
                 Teile den Link mit deinem Cutter
               </p>
             </div>
           ) : (
             <div className="space-y-5 py-4">
               <div className="space-y-2">
-                <label className="text-[12px] font-medium text-gray-700">Passwort für Cutter</label>
+                <label className="text-[12px] font-medium text-neutral-300">Passwort für Cutter</label>
                 <Input
                   value={sharePassword}
                   onChange={(e) => setSharePassword(e.target.value)}
                   placeholder="z.B. cutter2024"
                   className="h-11"
                 />
-                <p className="text-[11px] text-gray-500">
+                <p className="text-[11px] text-neutral-500">
                   Der Cutter braucht dieses Passwort
                 </p>
               </div>
               
               <div className="space-y-2">
-                <label className="text-[12px] font-medium text-gray-700">Anweisungen (optional)</label>
+                <label className="text-[12px] font-medium text-neutral-300">Anweisungen (optional)</label>
                 <Textarea
                   value={shareInstructions}
                   onChange={(e) => setShareInstructions(e.target.value)}
@@ -1671,13 +1616,13 @@ Simon`)
                 />
               </div>
               
-              <div className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                <p className="text-[11px] font-medium text-gray-500 mb-2">Cutter-Link</p>
+              <div className="p-4 rounded-xl bg-neutral-800/50 border border-neutral-700">
+                <p className="text-[11px] font-medium text-neutral-500 mb-2">Cutter-Link</p>
                 <div className="flex gap-2">
                   <Input
                     value={`${window.location.origin}/cutter`}
                     readOnly
-                    className="text-[12px] bg-white h-10"
+                    className="text-xs h-10"
                   />
                   <Button variant="outline" size="sm" onClick={copyCutterLink} className="h-10 px-3">
                     <Copy className="h-4 w-4" />
@@ -1723,21 +1668,21 @@ Simon`)
               commentTemplates.map((template) => (
                 <div 
                   key={template.id}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 group transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-neutral-800/50 hover:bg-neutral-800 group transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-gray-700">{template.content}</p>
+                    <p className="text-[13px] font-medium text-neutral-300">{template.content}</p>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openEditTemplateDialog(template)}
-                      className="p-2 rounded-lg hover:bg-white text-gray-400 hover:text-gray-600"
+                      className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-500 hover:text-white"
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteTemplate(template.id)}
-                      className="p-2 rounded-lg hover:bg-red-100 text-gray-400 hover:text-red-600"
+                      className="p-2 rounded-lg hover:bg-red-100 text-neutral-500 hover:text-red-600"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -1745,7 +1690,7 @@ Simon`)
                 </div>
               ))
             ) : (
-              <p className="text-[12px] text-gray-400 py-4 text-center">
+              <p className="text-[12px] text-neutral-500 py-4 text-center">
                 Noch keine Quick Comments
               </p>
             )}

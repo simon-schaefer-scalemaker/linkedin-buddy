@@ -169,7 +169,7 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
           >
             <Icon className="h-8 w-8 text-white" />
           </div>
-          <p className="text-gray-400 text-[14px]">Diese Plattform wird übersprungen</p>
+          <p className="text-neutral-500 text-[14px]">Diese Plattform wird übersprungen</p>
           <Button 
             variant="outline" 
             size="sm" 
@@ -192,15 +192,15 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
             <Icon className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h3 className="text-[16px] font-medium text-gray-900">{config.name}</h3>
-            <p className="text-[12px] text-gray-400">Trage deine KPIs für diese Woche ein</p>
+            <h3 className="text-[16px] font-medium text-white">{config.name}</h3>
+            <p className="text-[12px] text-neutral-500">Trage deine KPIs für diese Woche ein</p>
           </div>
         </div>
         
         <div className="grid grid-cols-2 gap-4">
           {config.fields.map((field) => (
             <div key={field.key} className="space-y-1.5">
-              <Label className="text-[12px] text-gray-600">{field.label}</Label>
+              <Label className="text-[12px] text-neutral-400">{field.label}</Label>
               <Input
                 type="text"
                 placeholder={field.placeholder}
@@ -221,11 +221,11 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
     return (
       <div className="space-y-4">
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-            <Check className="h-6 w-6 text-green-600" />
+          <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-3">
+            <Check className="h-6 w-6 text-green-400" />
           </div>
-          <h3 className="text-[16px] font-medium text-gray-900">Zusammenfassung</h3>
-          <p className="text-[12px] text-gray-400">{formatWeek(year, weekNumber)} • {getWeekRange(weekStart)}</p>
+          <h3 className="text-[16px] font-medium text-white">Zusammenfassung</h3>
+          <p className="text-[12px] text-neutral-500">{formatWeek(year, weekNumber)} • {getWeekRange(weekStart)}</p>
         </div>
         
         <div className="space-y-2">
@@ -245,14 +245,14 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                     >
                       <Icon className="h-4 w-4 text-white" />
                     </div>
-                    <span className="text-[13px] font-medium text-gray-900">{config.name}</span>
+                    <span className="text-[13px] font-medium text-white">{config.name}</span>
                   </div>
                   {isSkipped ? (
-                    <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                    <span className="text-[11px] text-neutral-500 flex items-center gap-1">
                       <X className="h-3 w-3" /> Übersprungen
                     </span>
                   ) : (
-                    <span className="text-[11px] text-green-600 flex items-center gap-1">
+                    <span className="text-[11px] text-green-400 flex items-center gap-1">
                       <Check className="h-3 w-3" /> Eingetragen
                     </span>
                   )}
@@ -272,7 +272,7 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
           <DialogTitle className="text-[18px]">
             Wöchentlicher Check-in
           </DialogTitle>
-          <p className="text-[13px] text-gray-400">
+          <p className="text-[13px] text-neutral-500">
             {formatWeek(year, weekNumber)} • {getWeekRange(weekStart)}
           </p>
         </DialogHeader>
@@ -293,9 +293,9 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                   className={cn(
                     "w-9 h-9 rounded-full flex items-center justify-center transition-all",
                     isActive && "ring-2 ring-offset-2",
-                    isComplete && !isSkipped && "bg-green-100",
-                    isComplete && isSkipped && "bg-gray-100",
-                    !isActive && !isComplete && "bg-gray-100"
+                    isComplete && !isSkipped && "bg-green-500/20",
+                    isComplete && isSkipped && "bg-neutral-800",
+                    !isActive && !isComplete && "bg-neutral-800"
                   )}
                   style={isActive ? { 
                     backgroundColor: config.color, 
@@ -303,20 +303,20 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                   } : undefined}
                 >
                   {isComplete && !isSkipped ? (
-                    <Check className="h-4 w-4 text-green-600" />
+                    <Check className="h-4 w-4 text-green-400" />
                   ) : isComplete && isSkipped ? (
-                    <SkipForward className="h-4 w-4 text-gray-400" />
+                    <SkipForward className="h-4 w-4 text-neutral-500" />
                   ) : (
                     <Icon className={cn(
                       "h-4 w-4",
-                      isActive ? "text-white" : "text-gray-400"
+                      isActive ? "text-white" : "text-neutral-500"
                     )} />
                   )}
                 </button>
                 {index < 3 && (
                   <div className={cn(
                     "w-8 h-0.5 mx-1",
-                    isComplete ? "bg-green-200" : "bg-gray-200"
+                    isComplete ? "bg-green-500/30" : "bg-neutral-700"
                   )} />
                 )}
               </div>
@@ -348,7 +348,7 @@ export function WeeklyCheckInWizard({ open, onOpenChange }: WeeklyCheckInWizardP
                 variant="ghost"
                 size="sm"
                 onClick={handleSkip}
-                className="text-[13px] text-gray-500"
+                className="text-[13px] text-neutral-500"
               >
                 <SkipForward className="h-4 w-4 mr-1" />
                 Überspringen

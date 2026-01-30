@@ -10,7 +10,7 @@ export interface Platform {
 }
 
 // Workflow Status Types
-export type WorkflowStatusId = 'backlog' | 'idea' | 'draft' | 'review' | 'scheduled' | 'published' | 'archived'
+export type WorkflowStatusId = 'idea' | 'draft' | 'review' | 'scheduled' | 'published' | 'archived'
 
 export interface WorkflowStatus {
   id: WorkflowStatusId
@@ -30,6 +30,88 @@ export interface ContentTag {
   bgColor: string
 }
 
+// Hook Type - für AI-Analyse welche Hook-Typen funktionieren
+export type HookType = 
+  | 'question'      // Frage stellen
+  | 'statistic'     // Zahl/Statistik
+  | 'story'         // Persönliche Geschichte
+  | 'provocation'   // Provokante Aussage
+  | 'list'          // "5 Dinge die..."
+  | 'how-to'        // "So machst du..."
+  | 'mistake'       // "Der größte Fehler..."
+  | 'contrarian'    // Gegenmeinung
+  | 'news'          // Aktuelle News/Trend
+  | 'quote'         // Zitat
+  | 'other'
+
+export const HOOK_TYPES: Record<HookType, { name: string; description: string; emoji: string }> = {
+  question: { name: 'Frage', description: 'Startet mit einer Frage', emoji: '❓' },
+  statistic: { name: 'Statistik', description: 'Startet mit einer Zahl/Statistik', emoji: '📊' },
+  story: { name: 'Story', description: 'Persönliche Geschichte/Erfahrung', emoji: '📖' },
+  provocation: { name: 'Provokation', description: 'Provokante/kontroverse Aussage', emoji: '🔥' },
+  list: { name: 'Liste', description: '"X Dinge die...", "X Gründe warum..."', emoji: '📝' },
+  'how-to': { name: 'How-To', description: '"So machst du...", "Wie du..."', emoji: '🎯' },
+  mistake: { name: 'Fehler', description: '"Der größte Fehler...", "Vermeide..."', emoji: '⚠️' },
+  contrarian: { name: 'Gegenmeinung', description: 'Gegen den Mainstream', emoji: '🔄' },
+  news: { name: 'News/Trend', description: 'Aktuelles Thema/Trend', emoji: '📰' },
+  quote: { name: 'Zitat', description: 'Startet mit einem Zitat', emoji: '💬' },
+  other: { name: 'Andere', description: 'Anderer Hook-Typ', emoji: '✨' }
+}
+
+// Topic/Theme - für AI-Analyse welche Themen funktionieren
+export type ContentTopic = 
+  | 'career'        // Karriere, Jobs
+  | 'productivity'  // Produktivität, Tools
+  | 'leadership'    // Führung, Management
+  | 'marketing'     // Marketing, Sales
+  | 'tech'          // Technologie, AI
+  | 'startup'       // Gründung, Entrepreneurship
+  | 'personal'      // Persönliches, Lifestyle
+  | 'failure'       // Fails, Learnings aus Fehlern
+  | 'success'       // Erfolge, Wins
+  | 'industry'      // Branchenspezifisch
+  | 'education'     // Lernen, Weiterbildung
+  | 'networking'    // Netzwerken, Community
+  | 'mindset'       // Mindset, Motivation
+  | 'other'
+
+export const CONTENT_TOPICS: Record<ContentTopic, { name: string; emoji: string }> = {
+  career: { name: 'Karriere', emoji: '💼' },
+  productivity: { name: 'Produktivität', emoji: '⚡' },
+  leadership: { name: 'Leadership', emoji: '👑' },
+  marketing: { name: 'Marketing & Sales', emoji: '📈' },
+  tech: { name: 'Tech & AI', emoji: '🤖' },
+  startup: { name: 'Startup & Gründung', emoji: '🚀' },
+  personal: { name: 'Persönliches', emoji: '🧑' },
+  failure: { name: 'Fails & Learnings', emoji: '💡' },
+  success: { name: 'Erfolge & Wins', emoji: '🏆' },
+  industry: { name: 'Branche', emoji: '🏢' },
+  education: { name: 'Lernen & Wissen', emoji: '📚' },
+  networking: { name: 'Networking', emoji: '🤝' },
+  mindset: { name: 'Mindset', emoji: '🧠' },
+  other: { name: 'Sonstiges', emoji: '📌' }
+}
+
+// Content Format - wie der Content präsentiert wird
+export type ContentFormat = 
+  | 'text-only'     // Nur Text
+  | 'text-image'    // Text + Bild
+  | 'carousel'      // Carousel/Slider
+  | 'video'         // Video
+  | 'poll'          // Umfrage
+  | 'document'      // PDF/Dokument
+  | 'link'          // Link-Post
+
+export const CONTENT_FORMATS: Record<ContentFormat, { name: string; emoji: string }> = {
+  'text-only': { name: 'Nur Text', emoji: '📝' },
+  'text-image': { name: 'Text + Bild', emoji: '🖼️' },
+  'carousel': { name: 'Carousel', emoji: '🎠' },
+  'video': { name: 'Video', emoji: '🎬' },
+  'poll': { name: 'Umfrage', emoji: '📊' },
+  'document': { name: 'Dokument/PDF', emoji: '📄' },
+  'link': { name: 'Link-Post', emoji: '🔗' }
+}
+
 // Post Types
 export interface BasePost {
   id: string
@@ -40,6 +122,14 @@ export interface BasePost {
   updatedAt: string
   scheduledFor?: string
   publishedAt?: string
+  
+  // AI Learning Fields
+  hookType?: HookType
+  topic?: ContentTopic
+  format?: ContentFormat
+  hypothesis?: string           // Warum wird dieser Post funktionieren?
+  targetAudience?: string       // Für wen ist dieser Post?
+  goalMetric?: 'impressions' | 'engagement' | 'comments' | 'shares' | 'clicks' | 'saves'
 }
 
 export interface LinkedInPost extends BasePost {
@@ -256,4 +346,47 @@ export interface User {
   name: string
   email: string
   avatarUrl?: string
+}
+
+// Learning Types - für AI-gestützte Performance-Analyse
+export interface PostLearning {
+  id: string
+  postId: string
+  platform: PlatformId
+  createdAt: string
+  
+  // Pre-Post (Hypothese)
+  hypothesis: string           // "Warum wird dieser Post funktionieren?"
+  targetMetric?: string        // "Mehr Kommentare", "Höhere CTR", etc.
+  
+  // Post-Post (Ergebnis)
+  outcome?: 'exceeded' | 'met' | 'missed'  // Hat die Hypothese gestimmt?
+  actualResult?: string        // Was ist tatsächlich passiert?
+  
+  // Learnings
+  whatWorked?: string          // Was hat funktioniert?
+  whatDidntWork?: string       // Was hat nicht funktioniert?
+  keyInsight?: string          // Wichtigste Erkenntnis
+  applyToFuture?: string       // Wie auf zukünftige Posts anwenden?
+  
+  // Metriken-Snapshot zum Zeitpunkt des Learnings
+  metricsSnapshot?: {
+    impressions?: number
+    engagement?: number
+    engagementRate?: number
+    [key: string]: number | undefined
+  }
+}
+
+// Performance Pattern - erkannte Muster über mehrere Posts
+export interface PerformancePattern {
+  id: string
+  platform: PlatformId
+  patternType: 'content' | 'timing' | 'format' | 'topic' | 'hook'
+  description: string
+  confidence: 'low' | 'medium' | 'high'
+  basedOnPosts: string[]       // Post IDs
+  avgPerformanceMultiplier: number  // 1.5 = 50% besser als Durchschnitt
+  createdAt: string
+  validatedAt?: string
 }

@@ -46,7 +46,7 @@ export async function uploadVideo(
   file: File, 
   type: VideoType, 
   postId: string,
-  onProgress?: (progress: UploadProgress) => void
+  _onProgress?: (progress: UploadProgress) => void
 ): Promise<UploadResult> {
   if (!isSupabaseConfigured()) {
     return {
@@ -59,7 +59,7 @@ export async function uploadVideo(
 
   try {
     // Upload file to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('videos')
       .upload(filePath, file, {
         cacheControl: '3600',

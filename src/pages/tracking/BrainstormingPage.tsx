@@ -79,19 +79,23 @@ export function BrainstormingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[22px] font-medium text-gray-900">Brainstorming</h1>
-          <p className="text-[13px] text-gray-400 mt-1">Tracke Content von anderen Creators für Inspiration</p>
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white tracking-tight">Brainstorming</h1>
+          <p className="text-sm text-neutral-500 mt-1">Tracke Content von anderen Creators für Inspiration</p>
         </div>
         <div className="flex items-center gap-2">
           {/* View Mode Toggle */}
-          <div className="flex items-center border border-gray-200 rounded-lg p-0.5 bg-gray-50">
+          <div className={cn(
+            "flex items-center border rounded-lg p-0.5",
+            "bg-white border-neutral-200",
+            "dark:bg-neutral-900 dark:border-neutral-800"
+          )}>
             <button
               onClick={() => setViewMode('grid')}
               className={cn(
                 "p-1.5 rounded-md transition-colors",
                 viewMode === 'grid' 
-                  ? "bg-white shadow-sm text-gray-900" 
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-neutral-900 shadow-sm text-white dark:bg-white dark:text-black" 
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
               )}
               title="Kartenansicht"
             >
@@ -102,8 +106,8 @@ export function BrainstormingPage() {
               className={cn(
                 "p-1.5 rounded-md transition-colors",
                 viewMode === 'list' 
-                  ? "bg-white shadow-sm text-gray-900" 
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-neutral-900 shadow-sm text-white dark:bg-white dark:text-black" 
+                  : "text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
               )}
               title="Listenansicht"
             >
@@ -130,7 +134,7 @@ export function BrainstormingPage() {
             </DialogHeader>
             <div className="space-y-4 pt-4">
               <div>
-                <label className="text-[13px] font-medium text-gray-700 mb-1.5 block">
+                <label className="text-[13px] font-medium text-neutral-300 mb-1.5 block">
                   {platformData.name} URL
                 </label>
                 <Input
@@ -166,10 +170,14 @@ export function BrainstormingPage() {
                 key={platform}
                 onClick={() => handlePlatformChange(platform)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all",
+                  "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all",
                   isActive 
-                    ? "text-white shadow-sm" 
-                    : "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
+                    ? "text-white shadow-lg" 
+                    : cn(
+                      "border",
+                      "bg-white border-neutral-200 text-neutral-600 hover:border-neutral-300 hover:text-neutral-900",
+                      "dark:bg-neutral-900 dark:border-neutral-800 dark:text-neutral-400 dark:hover:border-neutral-700 dark:hover:text-white"
+                    )
                 )}
                 style={isActive ? { backgroundColor: pData.color } : undefined}
               >
@@ -182,7 +190,7 @@ export function BrainstormingPage() {
         
         {/* Search */}
         <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -200,26 +208,26 @@ export function BrainstormingPage() {
             const newContent = content.filter(c => c.status === 'new').length
             
             return (
-              <Card key={profile.id} className="hover:border-gray-200 hover:shadow-sm transition-all h-full">
+              <Card key={profile.id} className="hover:border-neutral-700 hover:shadow-sm transition-all h-full">
                   <CardContent className="p-5">
                     <div className="flex items-start gap-3 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-lg font-medium">
+                      <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 text-lg font-medium">
                         {profile.name.charAt(0)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <Link to={`/brainstorming/${currentPlatform}/${profile.id}`}>
-                          <h3 className="text-[14px] font-medium text-gray-900 truncate hover:text-gray-600">{profile.name}</h3>
+                          <h3 className="text-[14px] font-medium text-neutral-900 dark:text-white truncate hover:text-neutral-500 dark:hover:text-neutral-400">{profile.name}</h3>
                         </Link>
-                        <p className="text-[12px] text-gray-400 truncate">{profile.handle}</p>
+                        <p className="text-[12px] text-neutral-500 truncate">{profile.handle}</p>
                       </div>
                       <a
                         href={profile.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="shrink-0 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="shrink-0 p-2 rounded-lg hover:bg-neutral-800 transition-colors"
                         title="Profil öffnen"
                       >
-                        <ExternalLink className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                        <ExternalLink className="h-4 w-4 text-neutral-500 hover:text-neutral-400" />
                       </a>
                     </div>
                     
@@ -230,8 +238,8 @@ export function BrainstormingPage() {
                     )}
                     
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="text-center p-2 rounded-lg bg-gray-50">
-                        <p className="text-[18px] font-light text-gray-900">
+                      <div className="text-center p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+                        <p className="text-[18px] font-light text-neutral-900 dark:text-white">
                           {profile.followers > 1000000 
                             ? `${(profile.followers / 1000000).toFixed(1)}M`
                             : profile.followers > 1000
@@ -239,30 +247,30 @@ export function BrainstormingPage() {
                               : profile.followers
                           }
                         </p>
-                        <p className="text-[11px] text-gray-400">Followers</p>
+                        <p className="text-[11px] text-neutral-500">Followers</p>
                       </div>
-                      <div className="text-center p-2 rounded-lg bg-gray-50">
-                        <p className="text-[18px] font-light text-gray-900">{content.length}</p>
-                        <p className="text-[11px] text-gray-400">Content</p>
+                      <div className="text-center p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50">
+                        <p className="text-[18px] font-light text-neutral-900 dark:text-white">{content.length}</p>
+                        <p className="text-[11px] text-neutral-500">Content</p>
                       </div>
                     </div>
 
                     {/* URL */}
-                    <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="mt-3 pt-3 border-t border-neutral-800">
                       <a 
                         href={profile.url} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-[11px] text-gray-400 hover:text-gray-600 truncate block"
+                        className="text-[11px] text-neutral-500 hover:text-neutral-400 truncate block"
                       >
                         {profile.url}
                       </a>
                     </div>
 
-                    <div className="mt-2 flex items-center justify-between text-[11px] text-gray-400">
+                    <div className="mt-2 flex items-center justify-between text-[11px] text-neutral-500">
                       <span>Zuletzt: {profile.lastScrapedAt ? format(new Date(profile.lastScrapedAt), "d. MMM", { locale: de }) : 'Nie'}</span>
-                      <Link to={`/brainstorming/${currentPlatform}/${profile.id}`} className="text-gray-400 hover:text-gray-600">
+                      <Link to={`/brainstorming/${currentPlatform}/${profile.id}`} className="text-neutral-500 hover:text-neutral-400">
                         Details →
                       </Link>
                     </div>
@@ -295,14 +303,14 @@ export function BrainstormingPage() {
                   <TableRow key={profile.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-sm font-medium shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 text-sm font-medium shrink-0">
                           {profile.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
                           <Link to={`/brainstorming/${currentPlatform}/${profile.id}`}>
-                            <p className="text-[13px] font-medium text-gray-900 hover:text-gray-600 truncate">{profile.name}</p>
+                            <p className="text-[13px] font-medium text-white hover:text-neutral-400 truncate">{profile.name}</p>
                           </Link>
-                          <p className="text-[11px] text-gray-400 truncate">{profile.handle}</p>
+                          <p className="text-[11px] text-neutral-500 truncate">{profile.handle}</p>
                         </div>
                         {newContent > 0 && (
                           <Badge variant="secondary" className="ml-2 shrink-0">
@@ -312,7 +320,7 @@ export function BrainstormingPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="text-[13px] text-gray-700">
+                      <span className="text-[13px] text-neutral-300">
                         {profile.followers > 1000000 
                           ? `${(profile.followers / 1000000).toFixed(1)}M`
                           : profile.followers > 1000
@@ -322,10 +330,10 @@ export function BrainstormingPage() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="text-[13px] text-gray-700">{content.length}</span>
+                      <span className="text-[13px] text-neutral-300">{content.length}</span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-[12px] text-gray-500">
+                      <span className="text-[12px] text-neutral-500">
                         {profile.lastScrapedAt ? format(new Date(profile.lastScrapedAt), "d. MMM yyyy", { locale: de }) : 'Nie'}
                       </span>
                     </TableCell>
@@ -348,7 +356,7 @@ export function BrainstormingPage() {
               })}
               {profiles.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-gray-400">
+                  <TableCell colSpan={5} className="text-center py-8 text-neutral-500">
                     {searchQuery 
                       ? `Keine Ergebnisse für "${searchQuery}"`
                       : `Keine ${labels.plural} getrackt`
@@ -366,9 +374,9 @@ export function BrainstormingPage() {
           <CardContent className="p-12 text-center">
             {searchQuery ? (
               <>
-                <Search className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-[15px] font-medium text-gray-900 mb-1">Keine Ergebnisse für "{searchQuery}"</h3>
-                <p className="text-[13px] text-gray-400 mb-4">
+                <Search className="h-12 w-12 text-neutral-600 mx-auto mb-4" />
+                <h3 className="text-[15px] font-medium text-white mb-1">Keine Ergebnisse für "{searchQuery}"</h3>
+                <p className="text-[13px] text-neutral-500 mb-4">
                   Versuche einen anderen Suchbegriff
                 </p>
                 <Button variant="outline" onClick={() => setSearchQuery('')}>
@@ -377,9 +385,9 @@ export function BrainstormingPage() {
               </>
             ) : (
               <>
-                <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-[15px] font-medium text-gray-900 mb-1">Keine {labels.plural} getrackt</h3>
-                <p className="text-[13px] text-gray-400 mb-4">
+                <Users className="h-12 w-12 text-neutral-600 mx-auto mb-4" />
+                <h3 className="text-[15px] font-medium text-white mb-1">Keine {labels.plural} getrackt</h3>
+                <p className="text-[13px] text-neutral-500 mb-4">
                   Füge {labels.plural} hinzu um deren Content zu verfolgen
                 </p>
                 <Button onClick={() => setAddDialogOpen(true)}>
@@ -425,7 +433,7 @@ export function BrainstormingProfileDetail() {
       {/* Back Button */}
       <button 
         onClick={handleBack}
-        className="flex items-center gap-2 text-[13px] text-gray-500 hover:text-gray-900 transition-colors"
+        className="flex items-center gap-2 text-[13px] text-neutral-500 hover:text-white transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zur Übersicht
@@ -434,13 +442,13 @@ export function BrainstormingProfileDetail() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-2xl font-medium">
+          <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 text-2xl font-medium">
             {profile.name.charAt(0)}
           </div>
           <div>
-            <h1 className="text-[22px] font-medium text-gray-900">{profile.name}</h1>
+            <h1 className="text-[22px] font-medium text-white">{profile.name}</h1>
             <div className="flex items-center gap-3 mt-1">
-              <span className="text-[13px] text-gray-400">{profile.handle}</span>
+              <span className="text-[13px] text-neutral-500">{profile.handle}</span>
               <Badge variant="secondary">
                 {profile.followers > 1000000 
                   ? `${(profile.followers / 1000000).toFixed(1)}M`
@@ -501,13 +509,13 @@ export function BrainstormingProfileDetail() {
                     <TableCell>
                       <div className="max-w-md">
                         {item.title && (
-                          <p className="text-[13px] font-medium text-gray-900 truncate">{item.title}</p>
+                          <p className="text-[13px] font-medium text-white truncate">{item.title}</p>
                         )}
-                        <p className="text-[12px] text-gray-500 truncate">{item.content.slice(0, 100)}</p>
+                        <p className="text-[12px] text-neutral-500 truncate">{item.content.slice(0, 100)}</p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-3 text-[12px] text-gray-500">
+                      <div className="flex items-center gap-3 text-[12px] text-neutral-500">
                         {item.metrics?.views && (
                           <span className="flex items-center gap-1">
                             <Eye className="h-3 w-3" />
@@ -529,7 +537,7 @@ export function BrainstormingProfileDetail() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-[12px] text-gray-500">
+                      <span className="text-[12px] text-neutral-500">
                         {format(new Date(item.publishedAt), "d. MMM yyyy", { locale: de })}
                       </span>
                     </TableCell>
@@ -555,7 +563,7 @@ export function BrainstormingProfileDetail() {
                 ))}
                 {filteredContent.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-400">
+                    <TableCell colSpan={5} className="text-center py-8 text-neutral-500">
                       Kein Content in dieser Kategorie
                     </TableCell>
                   </TableRow>

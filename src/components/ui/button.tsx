@@ -4,22 +4,48 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-[13px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-lg text-[13px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-gray-900 text-white hover:bg-gray-800 shadow-sm",
-        destructive: "bg-red-600 text-white hover:bg-red-500 shadow-sm",
-        outline: "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300",
-        secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200",
-        ghost: "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
-        link: "text-gray-900 underline-offset-4 hover:underline",
+        default: cn(
+          // Light mode
+          "bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm",
+          // Dark mode  
+          "dark:bg-white dark:text-black dark:hover:bg-neutral-200 dark:shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]"
+        ),
+        destructive: cn(
+          "bg-red-600 text-white hover:bg-red-700",
+          "dark:bg-red-600 dark:text-white dark:hover:bg-red-700"
+        ),
+        outline: cn(
+          // Light mode
+          "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-300",
+          // Dark mode
+          "dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white dark:hover:border-neutral-700"
+        ),
+        secondary: cn(
+          // Light mode
+          "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 hover:text-neutral-900",
+          // Dark mode
+          "dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white"
+        ),
+        ghost: cn(
+          // Light mode
+          "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100",
+          // Dark mode
+          "dark:text-neutral-400 dark:hover:text-white dark:hover:bg-white/10"
+        ),
+        link: cn(
+          "text-neutral-900 underline-offset-4 hover:underline",
+          "dark:text-white"
+        ),
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-[12px]",
-        lg: "h-10 rounded-lg px-5",
-        icon: "h-9 w-9",
+        default: "h-10 px-4 py-2",
+        sm: "h-8 px-3 text-[12px]",
+        lg: "h-11 px-6",
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {
@@ -40,7 +66,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={cn(
+          buttonVariants({ variant, size, className }),
+          // Focus ring based on theme
+          "focus-visible:ring-neutral-900/20 focus-visible:ring-offset-white",
+          "dark:focus-visible:ring-white/20 dark:focus-visible:ring-offset-neutral-950"
+        )}
         ref={ref}
         {...props}
       />

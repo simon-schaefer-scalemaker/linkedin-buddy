@@ -7,7 +7,7 @@ import type {
   SkoolWeeklyMetrics,
   WeeklyCheckInData
 } from '@/lib/types'
-import { getWeekNumber, getWeekStart } from '@/lib/utils'
+import { getWeekNumber } from '@/lib/utils'
 
 interface MetricsState {
   // Stored metrics per platform

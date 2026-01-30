@@ -23,7 +23,7 @@ export function KanbanColumn({
   onPostClick, 
   onNewPost,
   onDeletePost,
-  onDuplicatePost
+  onDuplicatePost,
 }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
   const statusData = WORKFLOW_STATUSES[status]
@@ -31,24 +31,33 @@ export function KanbanColumn({
   return (
     <div 
       className={cn(
-        "flex flex-col flex-1 min-w-0 bg-gray-50/50 rounded-xl border border-gray-100",
-        isOver && "border-gray-300 bg-gray-100/50"
+        "flex flex-col flex-1 min-w-0 rounded-xl border transition-all duration-200",
+        // Light mode
+        "bg-neutral-50 border-neutral-200",
+        // Dark mode
+        "dark:bg-neutral-900/40 dark:border-neutral-800/50",
+        // Hover state
+        isOver && "border-neutral-400 bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-800/50"
       )}
     >
       {/* Column Header */}
-      <div className="p-3 border-b border-gray-100">
+      <div className="p-3.5 border-b border-neutral-200 dark:border-neutral-800/50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <span className="text-base">{statusData.emoji}</span>
-            <h3 className="text-[13px] font-medium text-gray-900">{statusData.name}</h3>
-            <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+            <h3 className="text-sm font-medium text-neutral-900 dark:text-white">{statusData.name}</h3>
+            <span className={cn(
+              "text-xs px-2 py-0.5 rounded-full",
+              "text-neutral-600 bg-neutral-200",
+              "dark:text-neutral-500 dark:bg-neutral-800"
+            )}>
               {posts.length}
             </span>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-gray-400 hover:text-gray-600"
+            className="h-7 w-7"
             onClick={() => onNewPost(status)}
           >
             <Plus className="h-4 w-4" />
@@ -60,7 +69,7 @@ export function KanbanColumn({
       <ScrollArea className="flex-1 min-h-0">
         <div 
           ref={setNodeRef}
-          className="p-2 space-y-2"
+          className="p-2.5 space-y-2.5"
         >
           <SortableContext items={posts.map(p => p.id)} strategy={verticalListSortingStrategy}>
             {posts.map(post => (
@@ -75,15 +84,15 @@ export function KanbanColumn({
           </SortableContext>
 
           {posts.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <p className="text-[12px] text-gray-400 mb-2">Keine Posts</p>
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <p className="text-xs text-neutral-500 dark:text-neutral-600 mb-3">Keine Posts</p>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="text-[12px] text-gray-500"
+                className="text-xs"
                 onClick={() => onNewPost(status)}
               >
-                <Plus className="h-3.5 w-3.5 mr-1" />
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
                 Hinzufügen
               </Button>
             </div>

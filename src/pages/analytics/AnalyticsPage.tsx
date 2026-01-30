@@ -10,8 +10,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
-  Legend
+  ResponsiveContainer
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,6 +38,7 @@ import { PLATFORMS } from '@/lib/constants'
 import { useMetricsStore } from '@/stores/metricsStore'
 import { usePostsStore } from '@/lib/store'
 import { WeeklyCheckInWizard } from '@/components/analytics/WeeklyCheckInWizard'
+import { AIPerformanceReport } from '@/components/analytics/ai-performance-report'
 import { formatNumber, getWeekNumber, formatWeek } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import type { PlatformId } from '@/lib/types'
@@ -229,9 +229,9 @@ export function AnalyticsPage() {
     if (active && payload && payload.length) {
       const data = payload[0]
       return (
-        <div className="bg-white px-3 py-2 rounded-lg shadow-lg border text-[11px]">
-          <p className="font-medium">{data.name}</p>
-          <p className="text-gray-500">{formatNumber(data.value)}</p>
+        <div className="bg-white dark:bg-neutral-800 px-3 py-2 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 text-xs">
+          <p className="font-medium text-neutral-900 dark:text-white">{data.name}</p>
+          <p className="text-neutral-500 dark:text-neutral-400">{formatNumber(data.value)}</p>
         </div>
       )
     }
@@ -241,15 +241,15 @@ export function AnalyticsPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] -my-4">
       {/* Header */}
-      <div className="shrink-0 mb-2 flex items-start justify-between">
+      <div className="shrink-0 mb-4 flex items-start justify-between">
         <div>
-          <h1 className="text-[22px] font-medium text-gray-900">Analytics</h1>
-          <p className="text-[13px] text-gray-400 mt-0.5">Überblick über deine Content-Performance</p>
+          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-white tracking-tight">Analytics</h1>
+          <p className="text-sm text-neutral-500 mt-0.5">Überblick über deine Content-Performance</p>
         </div>
         <Button 
           size="sm" 
           onClick={() => setCheckInOpen(true)}
-          className={cn("text-[12px]", !hasCurrentWeekData && hasAnyData && "animate-pulse")}
+          className={cn(!hasCurrentWeekData && hasAnyData && "animate-pulse")}
         >
           <Plus className="h-4 w-4 mr-1" />
           KPIs eintragen
@@ -258,15 +258,15 @@ export function AnalyticsPage() {
       
       {/* Alert if no data for current week */}
       {!hasCurrentWeekData && hasAnyData && (
-        <div className="shrink-0 mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
-          <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-          <p className="text-[11px] text-amber-800 flex-1">
+        <div className="shrink-0 mb-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3">
+          <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+          <p className="text-xs text-amber-400 flex-1">
             Keine KPIs für {formatWeek(currentYear, currentWeek)} eingetragen
           </p>
           <Button 
             size="sm" 
             variant="ghost" 
-            className="text-[10px] h-6 text-amber-700 hover:bg-amber-100 px-2"
+            className="text-xs h-7 text-amber-400 hover:bg-amber-500/20 px-3"
             onClick={() => setCheckInOpen(true)}
           >
             Eintragen
@@ -278,11 +278,11 @@ export function AnalyticsPage() {
       {!hasAnyData && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-              <Calendar className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mx-auto mb-4">
+              <Calendar className="h-8 w-8 text-neutral-500" />
             </div>
-            <h2 className="text-[18px] font-medium text-gray-900 mb-2">Starte dein wöchentliches Tracking</h2>
-            <p className="text-[13px] text-gray-500 mb-6">
+            <h2 className="text-lg font-medium text-neutral-900 dark:text-white mb-2">Starte dein wöchentliches Tracking</h2>
+            <p className="text-sm text-neutral-500 mb-6">
               Trage jede Woche deine KPIs ein, um dein Wachstum über alle Plattformen zu verfolgen.
             </p>
             <Button onClick={() => setCheckInOpen(true)}>
@@ -305,7 +305,7 @@ export function AnalyticsPage() {
                 <CardHeader className="pb-0 pt-2 px-3 shrink-0">
                   <CardTitle className="text-[11px] flex items-center justify-between">
                     <span>Audience</span>
-                    <span className="text-[14px] font-semibold text-gray-900">{formatNumber(totals.totalFollowers)}</span>
+                    <span className="text-[14px] font-semibold text-neutral-900 dark:text-white">{formatNumber(totals.totalFollowers)}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 flex-1 min-h-0">
@@ -329,7 +329,7 @@ export function AnalyticsPage() {
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-[11px] text-gray-400">
+                    <div className="h-full flex items-center justify-center text-xs text-neutral-600">
                       Keine Daten
                     </div>
                   )}
@@ -341,7 +341,7 @@ export function AnalyticsPage() {
                 <CardHeader className="pb-0 pt-2 px-3 shrink-0">
                   <CardTitle className="text-[11px] flex items-center justify-between">
                     <span>Reichweite</span>
-                    <span className="text-[14px] font-semibold text-gray-900">{formatNumber(totals.totalReach)}</span>
+                    <span className="text-[14px] font-semibold text-neutral-900 dark:text-white">{formatNumber(totals.totalReach)}</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 flex-1 min-h-0">
@@ -365,7 +365,7 @@ export function AnalyticsPage() {
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-[11px] text-gray-400">
+                    <div className="h-full flex items-center justify-center text-xs text-neutral-600">
                       Keine Daten
                     </div>
                   )}
@@ -382,7 +382,7 @@ export function AnalyticsPage() {
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: PLATFORM_COLORS[platform] }}
                       />
-                      <Icon className="h-3 w-3 text-gray-400" />
+                      <Icon className="h-3 w-3 text-neutral-500" />
                     </div>
                   )
                 })}
@@ -420,10 +420,10 @@ export function AnalyticsPage() {
                   <CardContent className="p-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase">Wachstum</p>
+                        <p className="text-[9px] text-neutral-500 uppercase">Wachstum</p>
                         <p className={cn(
                           "text-[16px] font-semibold leading-tight",
-                          totals.totalGrowth > 0 ? "text-green-600" : totals.totalGrowth < 0 ? "text-red-600" : "text-gray-900"
+                          totals.totalGrowth > 0 ? "text-green-600" : totals.totalGrowth < 0 ? "text-red-600" : "text-neutral-900 dark:text-white"
                         )}>
                           {totals.totalGrowth > 0 ? '+' : ''}{formatNumber(totals.totalGrowth)}
                         </p>
@@ -441,8 +441,8 @@ export function AnalyticsPage() {
                   <CardContent className="p-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase">Engagement</p>
-                        <p className="text-[16px] font-semibold text-gray-900 leading-tight">
+                        <p className="text-[9px] text-neutral-500 uppercase">Engagement</p>
+                        <p className="text-[16px] font-semibold text-neutral-900 dark:text-white leading-tight">
                           {formatNumber(totals.totalEngagement)}
                         </p>
                       </div>
@@ -455,8 +455,8 @@ export function AnalyticsPage() {
                   <CardContent className="p-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase">Ø Eng. Rate</p>
-                        <p className="text-[16px] font-semibold text-gray-900 leading-tight">
+                        <p className="text-[9px] text-neutral-500 uppercase">Ø Eng. Rate</p>
+                        <p className="text-[16px] font-semibold text-neutral-900 dark:text-white leading-tight">
                           {latest.linkedin?.engagementRate?.toFixed(1) || '-'}%
                         </p>
                       </div>
@@ -469,8 +469,8 @@ export function AnalyticsPage() {
                   <CardContent className="p-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase">IG Saves</p>
-                        <p className="text-[16px] font-semibold text-gray-900 leading-tight">
+                        <p className="text-[9px] text-neutral-500 uppercase">IG Saves</p>
+                        <p className="text-[16px] font-semibold text-neutral-900 dark:text-white leading-tight">
                           {latest.instagram?.saves ? formatNumber(latest.instagram.saves) : '-'}
                         </p>
                       </div>
@@ -516,7 +516,7 @@ export function AnalyticsPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-medium text-gray-900">{platformData.name}</span>
+                                <span className="text-[11px] font-medium text-neutral-900 dark:text-white">{platformData.name}</span>
                                 {growth !== undefined && growth !== 0 && (
                                   <span className={cn(
                                     "text-[10px] font-medium flex items-center gap-0.5",
@@ -527,11 +527,11 @@ export function AnalyticsPage() {
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[13px] font-semibold text-gray-700">
+                              <p className="text-[13px] font-semibold text-neutral-600 dark:text-neutral-300">
                                 {hasData && followers ? formatNumber(followers) : '-'}
                               </p>
                             </div>
-                            <ArrowRight className="h-3.5 w-3.5 text-gray-300" />
+                            <ArrowRight className="h-3.5 w-3.5 text-neutral-600" />
                           </div>
                         </CardContent>
                       </Card>
@@ -556,9 +556,9 @@ export function AnalyticsPage() {
                           key={i}
                           className={cn(
                             "text-[10px] p-1.5 rounded",
-                            insight.type === 'success' && "bg-green-50 text-green-700",
-                            insight.type === 'warning' && "bg-amber-50 text-amber-700",
-                            insight.type === 'info' && "bg-blue-50 text-blue-700"
+                            insight.type === 'success' && "bg-green-500/10 text-green-400",
+                            insight.type === 'warning' && "bg-amber-500/10 text-amber-400",
+                            insight.type === 'info' && "bg-blue-500/10 text-blue-400"
                           )}
                         >
                           {insight.text}
@@ -572,6 +572,11 @@ export function AnalyticsPage() {
           </div>
         </>
       )}
+      
+      {/* AI Performance Report */}
+      <div className="shrink-0 mt-4">
+        <AIPerformanceReport />
+      </div>
       
       {/* Winner/Loser Dashboard */}
       <WinnerLoserDashboard />
@@ -602,7 +607,7 @@ function HypothesisValidation() {
     if (expected === 'above' && actual !== 'winner') return <XCircle className="h-4 w-4 text-red-500" />
     if (expected === 'average' && actual === 'average') return <CheckCircle2 className="h-4 w-4 text-green-500" />
     if (expected === 'test') return <Minus className="h-4 w-4 text-purple-500" />
-    return <Minus className="h-4 w-4 text-gray-400" />
+    return <Minus className="h-4 w-4 text-neutral-500" />
   }
   
   const getActualPerformance = (post: any): 'winner' | 'average' | 'loser' => {
@@ -628,7 +633,7 @@ function HypothesisValidation() {
           <Target className="h-5 w-5 text-purple-500" />
           <CardTitle className="text-[14px]">Hypothesen-Validierung</CardTitle>
         </div>
-        <p className="text-[12px] text-gray-500 mt-1">
+        <p className="text-[12px] text-neutral-500 mt-1">
           Vergleich: Erwartete vs. tatsächliche Performance deiner Posts
         </p>
       </CardHeader>
@@ -640,7 +645,7 @@ function HypothesisValidation() {
             const hypothesis = (post as any).hypothesis || ''
             
             return (
-              <div key={post.id} className="p-3 rounded-lg bg-gray-50 border border-gray-100">
+              <div key={post.id} className="p-3 rounded-lg bg-neutral-800/50 border border-neutral-800">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -648,33 +653,33 @@ function HypothesisValidation() {
                       {post.platform === 'youtube' && <Youtube className="h-3.5 w-3.5 text-[#FF0000]" />}
                       {post.platform === 'instagram' && <Instagram className="h-3.5 w-3.5 text-[#E4405F]" />}
                       {post.platform === 'skool' && <GraduationCap className="h-3.5 w-3.5 text-[#FACC15]" />}
-                      <span className="text-[12px] font-medium text-gray-900 truncate">
+                      <span className="text-[12px] font-medium text-white truncate">
                         {getTitle(post)}
                       </span>
                     </div>
-                    <p className="text-[11px] text-gray-500 line-clamp-2">
+                    <p className="text-[11px] text-neutral-500 line-clamp-2">
                       <span className="font-medium">Hypothese:</span> {hypothesis.slice(0, 100)}{hypothesis.length > 100 ? '...' : ''}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <div className="text-center">
-                      <p className="text-[9px] text-gray-400 uppercase">Erwartet</p>
+                      <p className="text-[9px] text-neutral-500 uppercase">Erwartet</p>
                       <span className={cn(
                         "text-[10px] font-medium px-2 py-0.5 rounded",
-                        expected === 'above' && "bg-green-100 text-green-700",
-                        expected === 'average' && "bg-gray-100 text-gray-600",
-                        expected === 'test' && "bg-purple-100 text-purple-700"
+                        expected === 'above' && "bg-green-500/20 text-green-400",
+                        expected === 'average' && "bg-neutral-800 text-neutral-400",
+                        expected === 'test' && "bg-purple-500/20 text-purple-400"
                       )}>
                         {expected === 'above' ? '↑ Hoch' : expected === 'test' ? '🧪 Test' : '→ Normal'}
                       </span>
                     </div>
                     <div className="text-center">
-                      <p className="text-[9px] text-gray-400 uppercase">Tatsächlich</p>
+                      <p className="text-[9px] text-neutral-500 uppercase">Tatsächlich</p>
                       <span className={cn(
                         "text-[10px] font-medium px-2 py-0.5 rounded",
-                        actual === 'winner' && "bg-green-100 text-green-700",
-                        actual === 'average' && "bg-gray-100 text-gray-600",
-                        actual === 'loser' && "bg-red-100 text-red-700"
+                        actual === 'winner' && "bg-green-500/20 text-green-400",
+                        actual === 'average' && "bg-neutral-800 text-neutral-400",
+                        actual === 'loser' && "bg-red-500/20 text-red-400"
                       )}>
                         {actual === 'winner' ? '↑ Winner' : actual === 'loser' ? '↓ Low' : '→ Normal'}
                       </span>
@@ -688,8 +693,8 @@ function HypothesisValidation() {
         </div>
         
         {postsWithHypotheses.length > 0 && (
-          <div className="mt-4 p-3 rounded-lg bg-purple-50 border border-purple-100">
-            <p className="text-[11px] text-purple-700">
+          <div className="mt-4 p-3 rounded-lg bg-purple-500/10 border border-purple-500/30">
+            <p className="text-xs text-purple-400">
               <span className="font-medium">💡 Tipp:</span> Analysiere regelmäßig, welche Hypothesen zutreffen. 
               So lernst du, was bei deiner Audience funktioniert.
             </p>
@@ -721,11 +726,11 @@ function WinnerLoserDashboard() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-6">
-            <Trophy className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-[13px] text-gray-500 mb-2">
+            <Trophy className="h-10 w-10 text-neutral-600 mx-auto mb-3" />
+            <p className="text-[13px] text-neutral-500 mb-2">
               Noch keine Posts analysiert
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-neutral-500">
               Öffne einen veröffentlichten Post und bewerte ihn als Winner oder Loser, um Learnings zu dokumentieren.
             </p>
           </div>
@@ -751,15 +756,15 @@ function WinnerLoserDashboard() {
             <CardTitle className="text-[14px]">Winner & Loser Analyse</CardTitle>
           </div>
           <div className="flex items-center gap-3 text-[11px]">
-            <span className="flex items-center gap-1.5 text-green-600">
+            <span className="flex items-center gap-1.5 text-green-400">
               <Trophy className="h-3.5 w-3.5" />
               {winners.length} Winner
             </span>
-            <span className="flex items-center gap-1.5 text-red-600">
+            <span className="flex items-center gap-1.5 text-red-400">
               <TrendingDown className="h-3.5 w-3.5" />
               {losers.length} Loser
             </span>
-            <span className="flex items-center gap-1.5 text-gray-500">
+            <span className="flex items-center gap-1.5 text-neutral-500">
               <Lightbulb className="h-3.5 w-3.5" />
               {postsWithLearnings.length} Learnings
             </span>
@@ -770,25 +775,25 @@ function WinnerLoserDashboard() {
         <div className="grid md:grid-cols-2 gap-4">
           {/* Winners Column */}
           <div>
-            <h4 className="text-[12px] font-semibold text-green-700 mb-3 flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-green-400 mb-3 flex items-center gap-1.5">
               <Trophy className="h-4 w-4" />
               Winners
             </h4>
             <div className="space-y-2">
               {winners.length === 0 ? (
-                <p className="text-[11px] text-gray-400 italic">Noch keine Winner markiert</p>
+                <p className="text-[11px] text-neutral-500 italic">Noch keine Winner markiert</p>
               ) : (
                 winners.slice(0, 5).map(post => (
-                  <div key={post.id} className="p-3 rounded-lg bg-green-50 border border-green-100">
+                  <div key={post.id} className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
                     <div className="flex items-start gap-2">
                       {post.platform === 'linkedin' && <Linkedin className="h-3.5 w-3.5 text-[#0A66C2] shrink-0 mt-0.5" />}
                       {post.platform === 'youtube' && <Youtube className="h-3.5 w-3.5 text-[#FF0000] shrink-0 mt-0.5" />}
                       {post.platform === 'instagram' && <Instagram className="h-3.5 w-3.5 text-[#E4405F] shrink-0 mt-0.5" />}
                       {post.platform === 'skool' && <GraduationCap className="h-3.5 w-3.5 text-[#FACC15] shrink-0 mt-0.5" />}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-gray-900 truncate">{getTitle(post)}</p>
+                        <p className="text-[11px] font-medium text-white truncate">{getTitle(post)}</p>
                         {(post as any).learning && (
-                          <p className="text-[10px] text-green-700 mt-1 line-clamp-2">
+                          <p className="text-[10px] text-green-400 mt-1 line-clamp-2">
                             💡 {(post as any).learning}
                           </p>
                         )}
@@ -802,25 +807,25 @@ function WinnerLoserDashboard() {
           
           {/* Losers Column */}
           <div>
-            <h4 className="text-[12px] font-semibold text-red-700 mb-3 flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-red-400 mb-3 flex items-center gap-1.5">
               <TrendingDown className="h-4 w-4" />
               Losers
             </h4>
             <div className="space-y-2">
               {losers.length === 0 ? (
-                <p className="text-[11px] text-gray-400 italic">Noch keine Loser markiert</p>
+                <p className="text-[11px] text-neutral-500 italic">Noch keine Loser markiert</p>
               ) : (
                 losers.slice(0, 5).map(post => (
-                  <div key={post.id} className="p-3 rounded-lg bg-red-50 border border-red-100">
+                  <div key={post.id} className="p-3 rounded-lg bg-red-500/10 border border-red-500/30">
                     <div className="flex items-start gap-2">
                       {post.platform === 'linkedin' && <Linkedin className="h-3.5 w-3.5 text-[#0A66C2] shrink-0 mt-0.5" />}
                       {post.platform === 'youtube' && <Youtube className="h-3.5 w-3.5 text-[#FF0000] shrink-0 mt-0.5" />}
                       {post.platform === 'instagram' && <Instagram className="h-3.5 w-3.5 text-[#E4405F] shrink-0 mt-0.5" />}
                       {post.platform === 'skool' && <GraduationCap className="h-3.5 w-3.5 text-[#FACC15] shrink-0 mt-0.5" />}
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-gray-900 truncate">{getTitle(post)}</p>
+                        <p className="text-[11px] font-medium text-white truncate">{getTitle(post)}</p>
                         {(post as any).learning && (
-                          <p className="text-[10px] text-red-700 mt-1 line-clamp-2">
+                          <p className="text-[10px] text-red-400 mt-1 line-clamp-2">
                             ⚠️ {(post as any).learning}
                           </p>
                         )}
@@ -835,17 +840,17 @@ function WinnerLoserDashboard() {
         
         {/* Key Learnings Summary */}
         {postsWithLearnings.length > 0 && (
-          <div className="mt-4 p-4 rounded-lg bg-amber-50 border border-amber-100">
-            <h4 className="text-[12px] font-semibold text-amber-800 mb-2 flex items-center gap-1.5">
+          <div className="mt-4 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+            <h4 className="text-xs font-semibold text-amber-400 mb-2 flex items-center gap-1.5">
               <Lightbulb className="h-4 w-4" />
               Zusammenfassung: Deine wichtigsten Learnings
             </h4>
             <ul className="space-y-1.5">
               {postsWithLearnings.slice(0, 3).map(post => (
-                <li key={post.id} className="text-[11px] text-amber-800 flex items-start gap-2">
+                <li key={post.id} className="text-xs text-amber-400 flex items-start gap-2">
                   <span className={cn(
                     "shrink-0 w-4 h-4 rounded flex items-center justify-center text-[9px] font-bold",
-                    (post as any).performanceRating === 'winner' ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"
+                    (post as any).performanceRating === 'winner' ? "bg-green-500/30 text-green-400" : "bg-red-500/30 text-red-400"
                   )}>
                     {(post as any).performanceRating === 'winner' ? '✓' : '✗'}
                   </span>

@@ -33,48 +33,89 @@ function isSupabaseConfigured(): boolean {
 }
 
 /**
- * Send message via Supabase Edge Function (API Key stored server-side)
+ * Send message via Vercel API Route or Supabase Edge Function
+ * API Key is stored server-side (never in browser)
  */
 export async function sendMessage(options: SendMessageOptions): Promise<string> {
   const { systemPrompt, messages, onChunk, onComplete, onError } = options
   
-  if (!isSupabaseConfigured()) {
-    const error = new ClaudeApiError('Supabase nicht konfiguriert. Bitte .env.local prüfen.')
-    onError?.(error)
-    throw error
-  }
-
   try {
-    // Call Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke('ai-chat', {
-      body: {
-        system_prompt: systemPrompt,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content
-        }))
-      }
-    })
+    let data: { success?: boolean; message?: string; error?: string } | null = null
+    let errorMsg: string | null = null
 
-    if (error) {
-      let errorMessage = 'AI-Fehler'
+    // Try Vercel API Route first (works when deployed to Vercel)
+    const vercelApiUrl = '/api/ai-chat'
+    
+    try {
+      const vercelResponse = await fetch(vercelApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_prompt: systemPrompt,
+          messages: messages.map(m => ({
+            role: m.role,
+            content: m.content
+          }))
+        })
+      })
       
-      if (error.message?.includes('ANTHROPIC_API_KEY')) {
-        errorMessage = 'Anthropic API Key nicht in Supabase konfiguriert. Bitte in Supabase → Settings → Edge Functions → Secrets hinzufügen.'
-      } else if (error.message?.includes('401')) {
-        errorMessage = 'Ungültiger API-Key in Supabase.'
-      } else if (error.message?.includes('429')) {
-        errorMessage = 'Zu viele Anfragen. Bitte warte einen Moment.'
-      } else {
-        errorMessage = error.message || 'Unbekannter Fehler'
+      if (vercelResponse.ok) {
+        data = await vercelResponse.json()
+      } else if (vercelResponse.status !== 404) {
+        // If not 404 (route exists but errored), use this error
+        const errData = await vercelResponse.json().catch(() => ({}))
+        errorMsg = errData.error || `API error: ${vercelResponse.status}`
+      }
+    } catch (vercelErr) {
+      // Vercel API not available (local dev or not deployed), try Supabase
+      console.log('Vercel API not available, trying Supabase Edge Function...')
+    }
+
+    // If Vercel didn't work, try Supabase Edge Function
+    if (!data && !errorMsg && isSupabaseConfigured()) {
+      try {
+        const { data: sbData, error: sbError } = await supabase.functions.invoke('ai-chat', {
+          body: {
+            system_prompt: systemPrompt,
+            messages: messages.map(m => ({
+              role: m.role,
+              content: m.content
+            }))
+          }
+        })
+        
+        if (sbError) {
+          errorMsg = sbError.message
+        } else {
+          data = sbData
+        }
+      } catch (sbErr) {
+        errorMsg = sbErr instanceof Error ? sbErr.message : 'Supabase Edge Function error'
+      }
+    }
+
+    // Handle errors
+    if (errorMsg || !data) {
+      let finalError = errorMsg || 'AI service not available'
+      
+      if (finalError.includes('ANTHROPIC_API_KEY')) {
+        finalError = 'API Key nicht konfiguriert. Bitte in Vercel/Supabase Settings hinzufügen.'
+      } else if (finalError.includes('Failed to send a request')) {
+        finalError = 'AI Service nicht erreichbar. Bitte deploye die App auf Vercel oder konfiguriere Supabase Edge Functions.'
       }
       
-      const apiError = new ClaudeApiError(errorMessage)
+      const apiError = new ClaudeApiError(finalError)
       onError?.(apiError)
       throw apiError
     }
 
-    const response = data?.message || data?.response || ''
+    if (!data.success && data.error) {
+      const apiError = new ClaudeApiError(data.error)
+      onError?.(apiError)
+      throw apiError
+    }
+
+    const response = data.message || ''
     
     // Simulate streaming for UI consistency
     if (onChunk) {
@@ -105,7 +146,9 @@ export function chatMessagesToClaudeMessages(messages: ChatMessage[]): ClaudeMes
   }))
 }
 
-// Check if API is configured (via Supabase)
+// Check if API is configured (via Vercel or Supabase)
 export function isApiConfigured(): boolean {
-  return isSupabaseConfigured()
+  // In production (Vercel), the API route will be available
+  // In development, we check Supabase
+  return isSupabaseConfigured() || import.meta.env.PROD
 }

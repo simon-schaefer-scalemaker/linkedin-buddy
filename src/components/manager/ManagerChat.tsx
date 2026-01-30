@@ -2,10 +2,8 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { 
   Bot, 
   Send, 
-  X, 
   Loader2, 
   Sparkles,
-  CheckCircle2,
   AlertTriangle,
   FileText,
   Trash2,
@@ -82,7 +80,7 @@ function renderMarkdown(text: string): React.ReactNode {
           parts.push(<span key={key++}>{remaining.slice(0, codeMatch.index)}</span>)
         }
         parts.push(
-          <code key={key++} className="px-1 py-0.5 bg-gray-200 rounded text-[12px] font-mono">
+          <code key={key++} className="px-1 py-0.5 bg-neutral-700 rounded text-xs font-mono">
             {codeMatch[1]}
           </code>
         )
@@ -392,8 +390,8 @@ Was möchtest du heute machen?`,
                     className={cn(
                       "max-w-[85%] rounded-xl px-4 py-3",
                       message.role === 'user'
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-900"
+                        ? "bg-white text-black"
+                        : "bg-neutral-800 text-neutral-100"
                     )}
                   >
                     {renderMarkdown(message.content)}
@@ -402,7 +400,7 @@ Was möchtest du heute machen?`,
                     {message.action && (
                       <div className={cn(
                         "mt-2 pt-2 border-t flex items-center gap-2 text-[11px]",
-                        message.role === 'user' ? "border-gray-700" : "border-gray-200"
+                        message.role === 'user' ? "border-neutral-600" : "border-neutral-700"
                       )}>
                         {getActionIcon(message.action.type)}
                         <span className={cn(
@@ -410,7 +408,7 @@ Was möchtest du heute machen?`,
                           message.action.status === 'executed' && "bg-green-100 text-green-700",
                           message.action.status === 'failed' && "bg-red-100 text-red-700",
                           message.action.status === 'requires_confirmation' && "bg-amber-100 text-amber-700",
-                          message.action.status === 'pending' && "bg-gray-200 text-gray-600"
+                          message.action.status === 'pending' && "bg-neutral-700 text-neutral-400"
                         )}>
                           {message.action.status === 'executed' && '✓ Ausgeführt'}
                           {message.action.status === 'failed' && '✗ Fehlgeschlagen'}
@@ -418,7 +416,7 @@ Was möchtest du heute machen?`,
                           {message.action.status === 'pending' && '⏳ Ausstehend'}
                         </span>
                         {message.action.result && (
-                          <span className="text-gray-500">{message.action.result}</span>
+                          <span className="text-neutral-500">{message.action.result}</span>
                         )}
                       </div>
                     )}
@@ -429,8 +427,8 @@ Was möchtest du heute machen?`,
               {/* Loading indicator */}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-xl px-4 py-3">
-                    <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                  <div className="bg-neutral-800 rounded-xl px-4 py-3">
+                    <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
                   </div>
                 </div>
               )}
@@ -450,7 +448,7 @@ Was möchtest du heute machen?`,
               />
             </div>
             <div className="flex items-center justify-between mt-2">
-              <p className="text-[11px] text-gray-400">
+              <p className="text-xs text-neutral-500">
                 Shift + Enter für neue Zeile
               </p>
               <Button 

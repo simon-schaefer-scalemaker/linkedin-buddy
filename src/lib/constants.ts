@@ -26,8 +26,8 @@ export const PLATFORMS: Record<PlatformId, Platform> = {
   skool: {
     id: 'skool',
     name: 'Skool',
-    color: '#FACC15',
-    bgColor: 'bg-yellow-400',
+    color: '#CA8A04',
+    bgColor: 'bg-yellow-600',
     icon: 'graduation-cap'
   }
 }
@@ -39,13 +39,6 @@ export const PLATFORM_LIST: Platform[] = PLATFORM_ORDER.map(id => PLATFORMS[id])
 
 // Workflow Statuses
 export const WORKFLOW_STATUSES: Record<WorkflowStatusId, WorkflowStatus> = {
-  backlog: {
-    id: 'backlog',
-    name: 'Backlog',
-    emoji: '📥',
-    color: 'text-gray-500',
-    bgColor: 'bg-gray-100'
-  },
   idea: {
     id: 'idea',
     name: 'Idee',
@@ -93,7 +86,7 @@ export const WORKFLOW_STATUSES: Record<WorkflowStatusId, WorkflowStatus> = {
 export const WORKFLOW_STATUS_LIST: WorkflowStatus[] = Object.values(WORKFLOW_STATUSES)
 
 // Kanban Column Order
-export const KANBAN_COLUMNS: WorkflowStatusId[] = ['backlog', 'idea', 'draft', 'review', 'scheduled', 'published']
+export const KANBAN_COLUMNS: WorkflowStatusId[] = ['idea', 'draft', 'review', 'scheduled', 'published']
 
 // Content Tags
 export const CONTENT_TAGS: Record<ContentTagId, ContentTag> = {

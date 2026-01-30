@@ -69,17 +69,21 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group cursor-pointer hover:border-gray-300 transition-all",
-        isDragging && "opacity-50 shadow-lg rotate-2"
+        "group cursor-pointer transition-all duration-200",
+        // Light mode hover
+        "hover:border-neutral-300 hover:bg-neutral-50",
+        // Dark mode hover
+        "dark:hover:border-neutral-700 dark:hover:bg-neutral-800/50",
+        isDragging && "opacity-50 shadow-2xl rotate-1 scale-105"
       )}
       onClick={onClick}
       {...attributes}
       {...listeners}
     >
-      <div className="p-3">
+      <div className="p-3.5">
         {/* Header with menu */}
         <div className="flex items-start justify-between mb-2">
-          <p className="text-[13px] font-medium text-gray-900 leading-snug flex-1 pr-2">
+          <p className="text-sm font-medium text-neutral-900 dark:text-white leading-snug flex-1 pr-2">
             {getPreview()}
           </p>
           <DropdownMenu>
@@ -92,17 +96,32 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onClick?.() }}>
+            <DropdownMenuContent align="end" className={cn(
+              "bg-white border-neutral-200",
+              "dark:bg-neutral-900 dark:border-neutral-800"
+            )}>
+              <DropdownMenuItem 
+                onClick={(e) => { e.stopPropagation(); onClick?.() }}
+                className={cn(
+                  "text-neutral-700 focus:text-neutral-900 focus:bg-neutral-100",
+                  "dark:text-neutral-300 dark:focus:text-white dark:focus:bg-neutral-800"
+                )}
+              >
                 Bearbeiten
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDuplicate?.() }}>
+              <DropdownMenuItem 
+                onClick={(e) => { e.stopPropagation(); onDuplicate?.() }}
+                className={cn(
+                  "text-neutral-700 focus:text-neutral-900 focus:bg-neutral-100",
+                  "dark:text-neutral-300 dark:focus:text-white dark:focus:bg-neutral-800"
+                )}
+              >
                 Duplizieren
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-neutral-200 dark:bg-neutral-800" />
               <DropdownMenuItem 
                 onClick={(e) => { e.stopPropagation(); onDelete?.() }}
-                className="text-red-600"
+                className="text-red-600 focus:text-red-700 focus:bg-red-50 dark:text-red-400 dark:focus:text-red-300 dark:focus:bg-red-500/10"
               >
                 Löschen
               </DropdownMenuItem>
@@ -112,18 +131,18 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
 
         {/* Tags */}
         {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1.5 mb-2.5">
             {post.tags.slice(0, 2).map(tag => (
               <TagBadge key={tag} tag={tag} />
             ))}
             {post.tags.length > 2 && (
-              <span className="text-[10px] text-gray-400">+{post.tags.length - 2}</span>
+              <span className="text-[10px] text-neutral-500 px-1">+{post.tags.length - 2}</span>
             )}
           </div>
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-between text-[11px] text-gray-400">
+        <div className="flex items-center justify-between text-xs text-neutral-500">
           {/* Scheduled Date */}
           {post.scheduledFor ? (
             <span className="flex items-center gap-1">
@@ -136,27 +155,27 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
 
           {/* Metrics */}
           {metrics && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {'views' in metrics && metrics.views !== undefined && (
-                <span className="flex items-center gap-0.5">
+                <span className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
                   {metrics.views > 1000 ? `${(metrics.views / 1000).toFixed(1)}k` : metrics.views}
                 </span>
               )}
               {'impressions' in metrics && metrics.impressions !== undefined && (
-                <span className="flex items-center gap-0.5">
+                <span className="flex items-center gap-1">
                   <Eye className="h-3 w-3" />
                   {metrics.impressions > 1000 ? `${(metrics.impressions / 1000).toFixed(1)}k` : metrics.impressions}
                 </span>
               )}
               {'likes' in metrics && metrics.likes !== undefined && (
-                <span className="flex items-center gap-0.5">
+                <span className="flex items-center gap-1">
                   <Heart className="h-3 w-3" />
                   {metrics.likes}
                 </span>
               )}
               {'comments' in metrics && metrics.comments !== undefined && (
-                <span className="flex items-center gap-0.5">
+                <span className="flex items-center gap-1">
                   <MessageSquare className="h-3 w-3" />
                   {metrics.comments}
                 </span>
@@ -164,6 +183,7 @@ export function KanbanCard({ post, onClick, onDelete, onDuplicate }: KanbanCardP
             </div>
           )}
         </div>
+        
       </div>
     </Card>
   )

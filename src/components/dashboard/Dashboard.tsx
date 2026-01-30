@@ -187,37 +187,52 @@ export function Dashboard() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-4 animate-fade-in">
-        {/* Header Row - Compact */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-[22px] font-semibold text-gray-900">Wochenziele</h1>
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      <div className="space-y-6 animate-fade-in">
+        {/* Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900 dark:text-white tracking-tight">Wochenziele</h1>
+            <div className={cn(
+              "flex items-center gap-1 rounded-full p-1 self-start sm:self-auto",
+              "bg-neutral-100 border border-neutral-200",
+              "dark:bg-neutral-900 dark:border-neutral-800"
+            )}>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 hover:bg-white"
+                className={cn(
+                  "h-8 w-8 rounded-full",
+                  "hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                )}
                 onClick={goToPreviousWeek}
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-[13px] text-gray-700 font-medium px-2 min-w-[160px] text-center">
+              <span className={cn(
+                "text-xs sm:text-sm font-medium px-2 sm:px-3 min-w-[120px] sm:min-w-[160px] text-center",
+                "text-neutral-700 dark:text-neutral-300"
+              )}>
                 {format(weekDays[0], "d. MMM", { locale: de })} – {format(weekDays[6], "d. MMM", { locale: de })}
               </span>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7 hover:bg-white"
+                className={cn(
+                  "h-8 w-8 rounded-full",
+                  "hover:bg-neutral-200 dark:hover:bg-neutral-800"
+                )}
                 onClick={goToNextWeek}
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
             {!isCurrentWeek && (
-              <>
+              <div className="flex items-center gap-2">
                 <span className={cn(
-                  "text-[11px] px-2 py-0.5 rounded-full",
-                  weeksFromNow < 0 ? "bg-gray-100 text-gray-500" : "bg-blue-50 text-blue-600"
+                  "text-xs px-2.5 py-1 rounded-full font-medium",
+                  weeksFromNow < 0 
+                    ? "bg-neutral-100 text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400" 
+                    : "bg-blue-50 text-blue-600 border border-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
                 )}>
                   {weeksFromNow < 0 
                     ? `vor ${Math.abs(weeksFromNow)} Woche${Math.abs(weeksFromNow) > 1 ? 'n' : ''}`
@@ -228,57 +243,63 @@ export function Dashboard() {
                   variant="ghost" 
                   size="sm" 
                   onClick={goToCurrentWeek}
-                  className="text-[11px] h-6 text-gray-500"
+                  className="text-xs text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
                 >
                   Heute
                 </Button>
-              </>
+              </div>
             )}
           </div>
           <Button 
             variant={editingGoals ? "default" : "outline"}
             size="sm" 
             onClick={() => setEditingGoals(!editingGoals)}
-            className="gap-1.5 h-8"
+            className="gap-1.5 self-start sm:self-auto"
           >
             <Settings2 className="h-3.5 w-3.5" />
             {editingGoals ? 'Fertig' : 'Ziele'}
           </Button>
         </div>
 
-        {/* Stats Bar - Single Row */}
-        <div className="flex items-stretch gap-3">
+        {/* Stats Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Main Progress */}
           <Card className={cn(
-            "flex-1 border-2",
-            overallProgress.percentage >= 100 ? "border-green-500 bg-green-50/30" : "border-gray-900"
+            "md:col-span-2 relative overflow-hidden",
+            overallProgress.percentage >= 100 && "border-green-500/50 bg-green-50 dark:bg-green-500/5"
           )}>
-            <CardContent className="p-4 flex items-center gap-4">
+            <CardContent className="p-5 flex items-center gap-4">
               <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                overallProgress.percentage >= 100 ? "bg-green-500" : "bg-gray-900"
+                "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
+                overallProgress.percentage >= 100 
+                  ? "bg-green-500" 
+                  : "bg-neutral-900 dark:bg-white"
               )}>
                 {overallProgress.percentage >= 100 ? (
-                  <Award className="h-5 w-5 text-white" />
+                  <Award className="h-6 w-6 text-white" />
                 ) : (
-                  <Target className="h-5 w-5 text-white" />
+                  <Target className="h-6 w-6 text-white dark:text-black" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[12px] text-gray-500">Wochenziel</span>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-neutral-500 font-medium uppercase tracking-wider">Wochenziel</span>
                   <span className={cn(
-                    "text-[20px] font-semibold leading-none",
-                    overallProgress.percentage >= 100 ? "text-green-600" : "text-gray-900"
+                    "text-2xl font-semibold tabular-nums",
+                    overallProgress.percentage >= 100 
+                      ? "text-green-600 dark:text-green-500" 
+                      : "text-neutral-900 dark:text-white"
                   )}>
                     {overallProgress.current}/{overallProgress.target}
                   </span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
                   <div 
                     className={cn(
                       "h-full rounded-full transition-all duration-500",
-                      overallProgress.percentage >= 100 ? "bg-green-500" : "bg-gray-900"
+                      overallProgress.percentage >= 100 
+                        ? "bg-green-500" 
+                        : "bg-neutral-900 dark:bg-white"
                     )}
                     style={{ width: `${Math.min(100, overallProgress.percentage)}%` }}
                   />
@@ -288,79 +309,112 @@ export function Dashboard() {
           </Card>
 
           {/* Streak */}
-          <Card className={cn("w-32", streak > 0 && "bg-orange-50/50 border-orange-200")}>
-            <CardContent className="p-4 flex items-center gap-3">
+          <Card className={cn(
+            "relative overflow-hidden",
+            streak > 0 && "border-orange-500/30 bg-orange-50 dark:bg-orange-500/5"
+          )}>
+            <CardContent className="p-5 flex items-center gap-4">
               <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                streak > 0 ? "bg-orange-500" : "bg-gray-100"
+                "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
+                streak > 0 
+                  ? "bg-orange-500" 
+                  : "bg-neutral-100 dark:bg-neutral-800"
               )}>
-                <Flame className={cn("h-5 w-5", streak > 0 ? "text-white" : "text-gray-400")} />
+                <Flame className={cn(
+                  "h-6 w-6", 
+                  streak > 0 ? "text-white" : "text-neutral-400 dark:text-neutral-600"
+                )} />
               </div>
               <div>
                 <p className={cn(
-                  "text-[20px] font-semibold leading-none",
-                  streak > 0 ? "text-orange-500" : "text-gray-300"
+                  "text-2xl font-semibold tabular-nums",
+                  streak > 0 
+                    ? "text-orange-600 dark:text-orange-500" 
+                    : "text-neutral-400 dark:text-neutral-600"
                 )}>
                   {streak}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Streak</p>
+                <p className="text-xs text-neutral-500">Streak</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Week Comparison */}
-          <Card className="w-32">
-            <CardContent className="p-4 flex items-center gap-3">
+          <Card className={cn(
+            "relative overflow-hidden",
+            weekComparison > 0 && "border-green-500/30 bg-green-50 dark:bg-green-500/5"
+          )}>
+            <CardContent className="p-5 flex items-center gap-4">
               <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                weekComparison > 0 ? "bg-green-500" : weekComparison < 0 ? "bg-red-100" : "bg-gray-100"
+                "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
+                weekComparison > 0 
+                  ? "bg-green-500" 
+                  : weekComparison < 0 
+                    ? "bg-red-100 dark:bg-red-500/20" 
+                    : "bg-neutral-100 dark:bg-neutral-800"
               )}>
                 {weekComparison >= 0 ? (
-                  <TrendingUp className={cn("h-5 w-5", weekComparison > 0 ? "text-white" : "text-gray-400")} />
+                  <TrendingUp className={cn(
+                    "h-6 w-6", 
+                    weekComparison > 0 ? "text-white" : "text-neutral-400 dark:text-neutral-600"
+                  )} />
                 ) : (
-                  <TrendingDown className="h-5 w-5 text-red-500" />
+                  <TrendingDown className="h-6 w-6 text-red-500" />
                 )}
               </div>
               <div>
                 <p className={cn(
-                  "text-[20px] font-semibold leading-none",
-                  weekComparison > 0 ? "text-green-500" : weekComparison < 0 ? "text-red-500" : "text-gray-400"
+                  "text-2xl font-semibold tabular-nums",
+                  weekComparison > 0 
+                    ? "text-green-600 dark:text-green-500" 
+                    : weekComparison < 0 
+                      ? "text-red-600 dark:text-red-500" 
+                      : "text-neutral-400 dark:text-neutral-600"
                 )}>
                   {weekComparison > 0 ? '+' : ''}{weekComparison}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">vs Vorw.</p>
+                <p className="text-xs text-neutral-500">vs Vorw.</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Combined Tracker Table */}
-        <Card>
-          <CardContent className="p-0">
+        <Card className="overflow-hidden">
+          <CardContent className="p-0 overflow-x-auto">
             {/* Header Row */}
-            <div className="flex items-center px-5 py-3 border-b bg-gray-50/80">
-              <div className="w-44" />
+            <div className={cn(
+              "flex items-center px-3 sm:px-5 py-4 min-w-[640px]",
+              "border-b border-neutral-200 bg-neutral-50",
+              "dark:border-neutral-800 dark:bg-neutral-900/50"
+            )}>
+              <div className="w-32 sm:w-44 shrink-0" />
               {weekDays.map((day, idx) => {
                 const isTodayDate = isToday(day)
                 return (
                   <div key={idx} className="flex-1 text-center">
                     <div className={cn(
-                      "text-[12px] font-medium",
-                      isTodayDate ? "text-gray-900" : "text-gray-400"
+                      "text-xs font-medium uppercase tracking-wider",
+                      isTodayDate 
+                        ? "text-neutral-900 dark:text-white" 
+                        : "text-neutral-400 dark:text-neutral-600"
                     )}>
                       {format(day, 'EEE', { locale: de })}
                     </div>
                     <div className={cn(
-                      "text-[11px]",
-                      isTodayDate ? "text-gray-900 font-semibold" : "text-gray-400"
+                      "text-xs mt-0.5 tabular-nums",
+                      isTodayDate 
+                        ? "text-neutral-900 dark:text-white font-semibold" 
+                        : "text-neutral-500"
                     )}>
                       {format(day, 'd.M.')}
                     </div>
                   </div>
                 )
               })}
-              <div className="w-28 text-right text-[12px] text-gray-400 font-medium pr-1">
-                Fortschritt
+              <div className="w-20 sm:w-28 shrink-0 text-right text-xs text-neutral-500 font-medium uppercase tracking-wider pr-1">
+                <span className="hidden sm:inline">Fortschritt</span>
+                <span className="sm:hidden">%</span>
               </div>
             </div>
 
@@ -378,22 +432,24 @@ export function Dashboard() {
                   key={platform}
                   to={`/boards?platform=${platform}`}
                   className={cn(
-                    "flex items-center px-5 py-3.5 transition-colors group",
-                    !isLast && "border-b",
-                    isComplete ? "bg-green-50/30 hover:bg-green-50/50" : "hover:bg-gray-50"
+                    "flex items-center px-3 sm:px-5 py-3 sm:py-4 transition-all duration-200 group min-w-[640px]",
+                    !isLast && "border-b border-neutral-100 dark:border-neutral-800/50",
+                    isComplete 
+                      ? "bg-green-50/50 hover:bg-green-50 dark:bg-green-500/5 dark:hover:bg-green-500/10" 
+                      : "hover:bg-neutral-50 dark:hover:bg-neutral-900/50"
                   )}
                 >
                   {/* Platform Info */}
-                  <div className="w-44 flex items-center gap-3">
+                  <div className="w-32 sm:w-44 shrink-0 flex items-center gap-2 sm:gap-3">
                     <div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105"
+                      className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-200 group-hover:scale-105"
                       style={{ backgroundColor: platformData.color }}
                     >
-                      <Icon className="h-5 w-5 text-white" />
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[14px] font-medium text-gray-900 truncate group-hover:text-gray-700">{platformData.name}</p>
-                      <p className="text-[11px] text-gray-400">
+                      <p className="text-xs sm:text-sm font-medium text-neutral-900 dark:text-white truncate">{platformData.name}</p>
+                      <p className="text-[10px] sm:text-xs text-neutral-500">
                         {progress.current}/{progress.target} Posts
                       </p>
                     </div>
@@ -412,14 +468,14 @@ export function Dashboard() {
                           <TooltipTrigger asChild>
                             <div 
                               className={cn(
-                                "w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-default text-[13px] font-medium",
+                                "w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center transition-all cursor-default text-xs sm:text-sm font-medium",
                                 postCount > 0 
-                                  ? "bg-green-500 text-white" 
+                                  ? "bg-green-500 text-white shadow-[0_0_20px_-5px_rgba(34,197,94,0.5)]" 
                                   : isPast && !isTodayDate
-                                    ? "bg-gray-100 text-gray-300"
+                                    ? "bg-neutral-100 text-neutral-400 dark:bg-neutral-800/50 dark:text-neutral-600"
                                     : isTodayDate
-                                      ? "bg-gray-900 text-white"
-                                      : "border border-dashed border-gray-200 text-gray-300"
+                                      ? "bg-neutral-900 text-white dark:bg-white dark:text-black"
+                                      : "border border-dashed border-neutral-300 text-neutral-400 dark:border-neutral-700 dark:text-neutral-600"
                               )}
                             >
                               {postCount > 1 ? postCount : postCount === 1 ? (
@@ -429,9 +485,12 @@ export function Dashboard() {
                               ) : isTodayDate ? '•' : ''}
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent>
+                          <TooltipContent className={cn(
+                            "bg-white border-neutral-200 text-neutral-900",
+                            "dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
+                          )}>
                             <p className="font-medium">{format(day, 'EEEE, d. MMMM', { locale: de })}</p>
-                            <p className="text-gray-400">
+                            <p className="text-neutral-500 dark:text-neutral-400 text-xs">
                               {postCount > 0 
                                 ? `${postCount} ${platformData.name} Post${postCount > 1 ? 's' : ''}`
                                 : `Kein ${platformData.name} Post`
@@ -444,13 +503,13 @@ export function Dashboard() {
                   })}
 
                   {/* Progress */}
-                  <div className="w-28 flex items-center justify-end gap-2">
+                  <div className="w-20 sm:w-28 shrink-0 flex items-center justify-end gap-1 sm:gap-2">
                     {editingGoals ? (
                       <div className="flex items-center gap-0.5" onClick={(e) => e.preventDefault()}>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-6 w-6"
+                          className="h-7 w-7"
                           onClick={(e) => {
                             e.preventDefault()
                             updateGoal(platform, { 
@@ -467,12 +526,12 @@ export function Dashboard() {
                           onChange={(e) => updateGoal(platform, { 
                             weeklyTarget: Math.max(0, parseInt(e.target.value) || 0) 
                           })}
-                          className="w-10 h-6 text-center text-[11px] px-1"
+                          className="w-12 h-7 text-center text-xs px-1"
                         />
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-6 w-6"
+                          className="h-7 w-7"
                           onClick={(e) => {
                             e.preventDefault()
                             updateGoal(platform, { 
@@ -486,13 +545,15 @@ export function Dashboard() {
                     ) : (
                       <>
                         <div className={cn(
-                          "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium",
-                          isComplete ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-600"
+                          "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium",
+                          isComplete 
+                            ? "bg-green-100 text-green-700 border border-green-200 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30" 
+                            : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                         )}>
                           {progress.percentage}%
                           {isComplete && <Check className="h-3 w-3" />}
                         </div>
-                        <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" />
+                        <ChevronRight className="h-4 w-4 text-neutral-400 dark:text-neutral-600 group-hover:text-neutral-600 dark:group-hover:text-neutral-400 transition-colors" />
                       </>
                     )}
                   </div>

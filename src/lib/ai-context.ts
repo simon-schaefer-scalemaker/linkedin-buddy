@@ -56,36 +56,7 @@ function analyzeLinkedInPost(post: LinkedInPost): LinkedInStructure {
   }
 }
 
-// Analyze YouTube post structure
-function analyzeYouTubePost(post: YouTubePost): YouTubeStructure {
-  return {
-    titleLength: post.content.title?.length || 0,
-    descriptionLength: post.content.description?.length || 0,
-    tagCount: post.content.tags?.length || 0,
-    hasCategory: !!post.content.category,
-    isShort: post.content.isShort
-  }
-}
-
-// Analyze Instagram post structure
-function analyzeInstagramPost(post: InstagramPost): InstagramStructure {
-  return {
-    captionLength: post.content.caption?.length || 0,
-    hashtagCount: post.content.hashtags?.length || 0,
-    hasLocation: !!post.content.location,
-    type: post.content.type
-  }
-}
-
-// Analyze Skool post structure
-function analyzeSkoolPost(post: SkoolPost): SkoolStructure {
-  return {
-    titleLength: post.content.title?.length || 0,
-    bodyLength: post.content.body?.length || 0,
-    hasCategory: !!post.content.category,
-    isPinned: post.content.isPinned || false
-  }
-}
+// YouTube, Instagram, Skool analysis functions removed (unused)
 
 // Get engagement score for sorting
 function getEngagementScore(post: Post): number {

@@ -31,7 +31,7 @@ export function DatePicker({
           variant="outline"
           className={cn(
             "w-full justify-start text-left font-normal",
-            !date && "text-gray-400",
+            !date && "text-neutral-500",
             className
           )}
         >
@@ -98,7 +98,7 @@ export function DateTimePicker({
           variant="outline"
           className={cn(
             "w-full justify-start text-left font-normal",
-            !date && "text-gray-400",
+            !date && "text-neutral-500",
             className
           )}
         >
@@ -116,15 +116,15 @@ export function DateTimePicker({
           onSelect={handleDateSelect}
           initialFocus
         />
-        <div className="border-t border-gray-100 p-3">
-          <label className="text-[12px] font-medium text-gray-500 mb-1.5 block">
+        <div className="border-t border-neutral-800 p-3">
+          <label className="text-[12px] font-medium text-neutral-500 mb-1.5 block">
             Uhrzeit
           </label>
           <input
             type="time"
             value={time}
             onChange={handleTimeChange}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-[13px] focus:outline-none focus:ring-2 focus:ring-gray-900/5 focus:border-gray-300"
+            className="w-full px-3 py-2 rounded-lg border border-neutral-700 text-[13px] focus:outline-none focus:ring-2 focus:ring-white/10 focus:border-neutral-600"
           />
         </div>
       </PopoverContent>

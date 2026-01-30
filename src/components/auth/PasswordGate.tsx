@@ -52,8 +52,8 @@ export function PasswordGate({ children }: PasswordGateProps) {
   // Still checking auth status
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-neutral-500" />
       </div>
     )
   }
@@ -61,10 +61,10 @@ export function PasswordGate({ children }: PasswordGateProps) {
   // Not authenticated - show password screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-neutral-950 to-neutral-900 flex items-center justify-center p-4">
         <Card className="w-full max-w-sm shadow-lg">
           <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-12 h-12 rounded-full bg-gray-900 flex items-center justify-center mb-4">
+            <div className="mx-auto w-12 h-12 rounded-full bg-white flex items-center justify-center mb-4">
               <Lock className="h-6 w-6 text-white" />
             </div>
             <CardTitle className="text-xl">LinkedIn Buddy</CardTitle>

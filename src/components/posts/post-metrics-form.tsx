@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { BarChart3, TrendingUp, Eye, Heart, MessageSquare, Share2, Bookmark, Clock, Users } from 'lucide-react'
-import type { PlatformId, LinkedInPost, YouTubePost, InstagramPost, SkoolPost, Post } from '@/lib/types'
+import type { PlatformId, Post } from '@/lib/types'
 import { format, addDays } from 'date-fns'
 import { de } from 'date-fns/locale'
 
@@ -128,7 +128,7 @@ export function PostMetricsForm({ platform, post, onMetricsChange }: PostMetrics
       <CardContent className="pt-0 space-y-4">
         {/* Measurement Period */}
         <div>
-          <Label className="text-[11px] text-gray-500 mb-1.5 block">Gemessen</Label>
+          <Label className="text-[11px] text-neutral-500 mb-1.5 block">Gemessen</Label>
           <Select value={measurementPeriod} onValueChange={(v) => { setMeasurementPeriod(v); setHasChanges(true); }}>
             <SelectTrigger className="h-8 text-[12px]">
               <SelectValue />
@@ -142,7 +142,7 @@ export function PostMetricsForm({ platform, post, onMetricsChange }: PostMetrics
             </SelectContent>
           </Select>
           {post.publishedAt && (
-            <p className="text-[10px] text-gray-400 mt-1">
+            <p className="text-[10px] text-neutral-500 mt-1">
               = {format(measuredAt, "d. MMM yyyy", { locale: de })}
             </p>
           )}
@@ -154,7 +154,7 @@ export function PostMetricsForm({ platform, post, onMetricsChange }: PostMetrics
             const Icon = metric.icon
             return (
               <div key={metric.key}>
-                <Label className="text-[10px] text-gray-500 mb-1 flex items-center gap-1">
+                <Label className="text-[10px] text-neutral-500 mb-1 flex items-center gap-1">
                   <Icon className="h-3 w-3" />
                   {metric.label}
                 </Label>
@@ -175,7 +175,7 @@ export function PostMetricsForm({ platform, post, onMetricsChange }: PostMetrics
         {hasAnyMetrics && (
           <div className="pt-2 border-t border-green-200">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] text-gray-500">Engagement Rate</span>
+              <span className="text-[11px] text-neutral-500">Engagement Rate</span>
               <span className="text-[13px] font-medium text-green-700">{calculateEngagementRate()}</span>
             </div>
           </div>

@@ -24,15 +24,15 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-8 bg-red-50 text-red-800 rounded-lg m-4">
-          <h2 className="text-xl font-bold mb-4">Fehler beim Laden des Formulars</h2>
-          <p className="mb-2"><strong>Fehler:</strong> {this.state.error?.message}</p>
-          <pre className="bg-red-100 p-4 rounded text-sm overflow-auto max-h-64">
+        <div className="p-8 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl m-4">
+          <h2 className="text-xl font-bold mb-4 text-red-300">Fehler beim Laden des Formulars</h2>
+          <p className="mb-2"><strong className="text-red-300">Fehler:</strong> {this.state.error?.message}</p>
+          <pre className="bg-red-500/10 p-4 rounded-lg text-sm overflow-auto max-h-64 border border-red-500/20">
             {this.state.error?.stack}
           </pre>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500"
           >
             Seite neu laden
           </button>

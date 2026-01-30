@@ -209,7 +209,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
   
   const renderPlatformStep = () => (
     <div className="space-y-4">
-      <p className="text-[13px] text-gray-500">
+      <p className="text-[13px] text-neutral-500">
         Wähle die Plattform für den historischen Post
       </p>
       <div className="grid grid-cols-2 gap-3">
@@ -225,8 +225,8 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
               className={cn(
                 "flex items-center gap-3 p-4 rounded-lg border-2 transition-all text-left",
                 isSelected 
-                  ? "border-gray-900 bg-gray-50" 
-                  : "border-gray-200 hover:border-gray-300"
+                  ? "border-white bg-neutral-800/50" 
+                  : "border-neutral-700 hover:border-neutral-600"
               )}
             >
               <div 
@@ -236,7 +236,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
                 <Icon className="h-5 w-5 text-white" />
               </div>
               <div>
-                <p className="text-[14px] font-medium text-gray-900">{pData.name}</p>
+                <p className="text-[14px] font-medium text-white">{pData.name}</p>
               </div>
             </button>
           )
@@ -272,7 +272,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
     
     return (
       <div className="space-y-4">
-        <p className="text-[13px] text-gray-500">
+        <p className="text-[13px] text-neutral-500">
           Gib den Inhalt des Posts ein
         </p>
         
@@ -462,7 +462,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
     
     return (
       <div className="space-y-4">
-        <p className="text-[13px] text-gray-500">
+        <p className="text-[13px] text-neutral-500">
           Gib die Performance-Metriken ein (optional, aber empfohlen für AI-Learning)
         </p>
         
@@ -471,7 +471,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
             const Icon = field.icon
             return (
               <div key={field.key}>
-                <Label className="text-[11px] text-gray-500 flex items-center gap-1">
+                <Label className="text-[11px] text-neutral-500 flex items-center gap-1">
                   <Icon className="h-3 w-3" />
                   {field.label}
                 </Label>
@@ -491,7 +491,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
           })}
         </div>
         
-        <p className="text-[11px] text-gray-400 pt-2">
+        <p className="text-[11px] text-neutral-500 pt-2">
           Tipp: Die Metriken sollten nach 7 Tagen erhoben werden für Vergleichbarkeit
         </p>
       </div>
@@ -503,8 +503,8 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
       <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
         <Check className="h-8 w-8 text-green-600" />
       </div>
-      <h3 className="text-[16px] font-medium text-gray-900 mb-2">Post importiert!</h3>
-      <p className="text-[13px] text-gray-500 mb-6">
+      <h3 className="text-[16px] font-medium text-white mb-2">Post importiert!</h3>
+      <p className="text-[13px] text-neutral-500 mb-6">
         Der historische Post wurde erfolgreich hinzugefügt und steht jetzt für AI-Analyse zur Verfügung.
       </p>
       <div className="flex gap-2 justify-center">
@@ -536,10 +536,10 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
                 <div className={cn(
                   "w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-medium",
                   step === s 
-                    ? "bg-gray-900 text-white" 
+                    ? "bg-white text-black" 
                     : ['platform', 'content', 'metrics'].indexOf(step) > i
                       ? "bg-green-100 text-green-600"
-                      : "bg-gray-100 text-gray-400"
+                      : "bg-neutral-800 text-neutral-500"
                 )}>
                   {['platform', 'content', 'metrics'].indexOf(step) > i ? (
                     <Check className="h-4 w-4" />
@@ -547,7 +547,7 @@ export function ImportPostWizard({ open, onOpenChange }: ImportPostWizardProps) 
                     i + 1
                   )}
                 </div>
-                {i < 2 && <div className="w-12 h-0.5 bg-gray-200 mx-1" />}
+                {i < 2 && <div className="w-12 h-0.5 bg-neutral-700 mx-1" />}
               </div>
             ))}
           </div>

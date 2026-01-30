@@ -6,26 +6,19 @@ import {
   Trash2, 
   Sparkles,
   Lightbulb,
-  Workflow,
-  Type,
-  Image,
-  List,
   Video,
-  FileText,
   Scissors,
   Copy,
   Check,
   Plus,
   X,
   ExternalLink,
-  Keyboard,
   Loader2,
   Target,
   TrendingUp,
   Minus,
   ChevronDown,
-  ChevronRight,
-  Film
+  ChevronRight
 } from 'lucide-react'
 
 // Workflow Step IDs
@@ -81,7 +74,7 @@ function WorkflowSection({
       id={`section-${id}`}
       className={cn(
         "border rounded-xl transition-all duration-200 overflow-hidden",
-        isOpen ? "border-gray-200 bg-white shadow-sm" : "border-gray-100 bg-gray-50/30",
+        isOpen ? "border-neutral-600 bg-neutral-800 shadow-lg" : "border-neutral-800 bg-neutral-800/30",
         isComplete && !isOpen && "border-red-200 bg-red-50/20"
       )}
     >
@@ -89,8 +82,8 @@ function WorkflowSection({
       <button
         onClick={onToggle}
         className={cn(
-          "w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-gray-50/50",
-          isOpen && "border-b border-gray-100 hover:bg-transparent"
+          "w-full flex items-center gap-3 p-4 text-left transition-colors hover:bg-neutral-800/50/50",
+          isOpen && "border-b border-neutral-800 hover:bg-transparent"
         )}
       >
         {/* Status Icon */}
@@ -98,7 +91,7 @@ function WorkflowSection({
           "w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
           isOpen && "bg-red-500 text-white",
           !isOpen && isComplete && "bg-red-500 text-white",
-          !isOpen && !isComplete && "bg-gray-200 text-gray-500"
+          !isOpen && !isComplete && "bg-neutral-700 text-neutral-500"
         )}>
           {isComplete && !isOpen ? (
             <Check className="h-4 w-4" />
@@ -112,7 +105,7 @@ function WorkflowSection({
           <div className="flex items-center gap-2">
             <span className={cn(
               "font-semibold text-[13px] uppercase tracking-wide",
-              isOpen ? "text-gray-900" : isComplete ? "text-red-700" : "text-gray-500"
+              isOpen ? "text-white" : isComplete ? "text-red-700" : "text-neutral-500"
             )}>
               {title}
             </span>
@@ -127,7 +120,7 @@ function WorkflowSection({
           {!isOpen && (
             <p className={cn(
               "text-[11px] mt-1 truncate max-w-[500px]",
-              isComplete ? "text-red-600" : "text-gray-400 italic"
+              isComplete ? "text-red-600" : "text-neutral-500 italic"
             )}>
               {preview || (isComplete ? "Ausgefüllt" : "Noch nicht ausgefüllt")}
             </p>
@@ -138,7 +131,7 @@ function WorkflowSection({
         <div className={cn("shrink-0 transition-transform", isOpen && "rotate-180")}>
           <ChevronDown className={cn(
             "h-5 w-5",
-            isOpen ? "text-gray-600" : "text-gray-400"
+            isOpen ? "text-neutral-400" : "text-neutral-500"
           )} />
         </div>
       </button>
@@ -150,7 +143,7 @@ function WorkflowSection({
           
           {/* Next Step Button */}
           {onNext && nextLabel && (
-            <div className="flex justify-end pt-3 border-t border-gray-100">
+            <div className="flex justify-end pt-3 border-t border-neutral-800">
               <Button onClick={onNext} className="gap-2 bg-red-500 hover:bg-red-600">
                 {nextLabel}
                 <ChevronRight className="h-4 w-4" />
@@ -216,7 +209,7 @@ function LabeledInput({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+      <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
         {label}
       </label>
       <Input
@@ -224,7 +217,7 @@ function LabeledInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-11 text-[13px] bg-gray-50/50 border-gray-200 focus:bg-white transition-colors"
+        className="h-11 text-[13px] bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700 transition-colors"
       />
     </div>
   )
@@ -570,7 +563,7 @@ export function YouTubePostForm() {
               value={post.content.title || ''}
               onChange={(e) => updateContent('title', e.target.value)}
               placeholder="Video-Titel..."
-              className="text-[18px] font-medium border-none shadow-none px-0 h-auto focus-visible:ring-0 bg-transparent w-[400px]"
+              className="text-[18px] font-medium border-none shadow-none px-3 py-2 h-auto focus-visible:ring-0 bg-transparent w-[400px]"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -595,7 +588,7 @@ export function YouTubePostForm() {
         </div>
 
         {/* Progress Stepper */}
-        <div className="flex items-center gap-2 pb-4 border-b border-gray-100 mb-4 shrink-0">
+        <div className="flex items-center gap-2 pb-4 border-b border-neutral-800 mb-4 shrink-0">
           {WORKFLOW_STEPS.map((step, index) => (
             <div key={step.id} className="flex items-center">
               <button
@@ -604,7 +597,7 @@ export function YouTubePostForm() {
                   "flex items-center gap-2 px-3 py-1.5 rounded-full transition-all text-[11px] font-medium",
                   activeStep === step.id && "bg-red-500 text-white",
                   activeStep !== step.id && isStepComplete(step.id) && "bg-red-100 text-red-700 hover:bg-red-200",
-                  activeStep !== step.id && !isStepComplete(step.id) && "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  activeStep !== step.id && !isStepComplete(step.id) && "bg-neutral-800 text-neutral-500 hover:bg-neutral-700"
                 )}
               >
                 {isStepComplete(step.id) && activeStep !== step.id ? (
@@ -617,7 +610,7 @@ export function YouTubePostForm() {
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div className={cn(
                   "w-8 h-[2px] mx-1",
-                  isStepComplete(step.id) ? "bg-red-300" : "bg-gray-200"
+                  isStepComplete(step.id) ? "bg-red-300" : "bg-neutral-700"
                 )} />
               )}
             </div>
@@ -641,8 +634,8 @@ export function YouTubePostForm() {
             nextLabel="Weiter: Konzept"
           >
             {/* Video Type Toggle */}
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg mb-4">
-              <Label className="text-[12px] text-gray-600">Video-Typ:</Label>
+            <div className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-lg mb-4">
+              <Label className="text-[12px] text-neutral-400">Video-Typ:</Label>
               <div className="flex gap-2">
                 <Button
                   variant={!post.content.isShort ? 'default' : 'outline'}
@@ -667,7 +660,7 @@ export function YouTubePostForm() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Hypothese: Warum wird dieses Video funktionieren?
                   </label>
                   <Button
@@ -720,13 +713,13 @@ export function YouTubePostForm() {
               
               {/* Expected Performance */}
               <div className="space-y-2">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Erwartete Performance
                 </label>
                 <div className="flex gap-2">
                   {[
                     { id: 'above', label: 'Überdurchschnittlich', icon: TrendingUp, color: 'text-green-600', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
-                    { id: 'average', label: 'Durchschnitt', icon: Minus, color: 'text-gray-600', bgColor: 'bg-gray-50', borderColor: 'border-gray-200' },
+                    { id: 'average', label: 'Durchschnitt', icon: Minus, color: 'text-neutral-400', bgColor: 'bg-neutral-800/50', borderColor: 'border-neutral-700' },
                     { id: 'test', label: 'Test/Experiment', icon: Target, color: 'text-purple-600', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
                   ].map((option) => (
                     <button
@@ -736,7 +729,7 @@ export function YouTubePostForm() {
                         "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg border-2 transition-all text-[11px] font-medium",
                         expectedPerformance === option.id
                           ? `${option.bgColor} ${option.borderColor} ${option.color}`
-                          : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                          : "bg-neutral-800 border-neutral-700 text-neutral-500 hover:border-neutral-600"
                       )}
                     >
                       <option.icon className="h-3.5 w-3.5" />
@@ -763,32 +756,32 @@ export function YouTubePostForm() {
             {/* Idea */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Was ist meine Idee?
                 </label>
                 <Textarea
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
                   placeholder="Beschreibe deine Video-Idee..."
-                  className="min-h-[100px] text-[13px] bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
+                  className="min-h-[100px] text-[13px] bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700 transition-colors resize-none"
                 />
               </div>
               
               <div className="space-y-2">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Workflow / Prozess
                 </label>
                 <Textarea
                   value={workflow}
                   onChange={(e) => setWorkflow(e.target.value)}
                   placeholder="Beschreibe den Ablauf / Workflow..."
-                  className="min-h-[100px] text-[13px] font-mono bg-gray-50 text-gray-900 border-gray-200 focus:bg-white transition-colors resize-none"
+                  className="min-h-[100px] text-[13px] font-mono bg-neutral-800/50 text-white border-neutral-700 focus:bg-neutral-700 transition-colors resize-none"
                 />
               </div>
             </div>
             
             {/* Titel & Hook */}
-            <div className="pt-4 border-t border-gray-100 space-y-4">
+            <div className="pt-4 border-t border-neutral-800 space-y-4">
               <LabeledInput
                 label="Video-Titel"
                 value={post.content.title || ''}
@@ -798,14 +791,14 @@ export function YouTubePostForm() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Thumbnail Beschreibung
                   </label>
                   <Textarea
                     value={thumbnailDescription}
                     onChange={(e) => setThumbnailDescription(e.target.value)}
                     placeholder="Beschreibe das gewünschte Thumbnail..."
-                    className="min-h-[80px] text-[13px] bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
+                    className="min-h-[80px] text-[13px] bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700 transition-colors resize-none"
                   />
                 </div>
                 <LabeledInput
@@ -818,38 +811,38 @@ export function YouTubePostForm() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                   Hook (erste 30 Sekunden)
                 </label>
                 <Textarea
                   value={hook}
                   onChange={(e) => setHook(e.target.value)}
                   placeholder="Script für die ersten 30 Sekunden..."
-                  className="min-h-[100px] text-[13px] bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none"
+                  className="min-h-[100px] text-[13px] bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700 transition-colors resize-none"
                 />
                 <CopyBtn text={hook} className="w-full h-9" />
               </div>
             </div>
 
             {/* Bulletpoints */}
-            <div className="pt-4 border-t border-gray-100 space-y-4">
-              <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+            <div className="pt-4 border-t border-neutral-800 space-y-4">
+              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                 Grober Aufbau des Videos
               </label>
               
               <div className="space-y-2">
                 {bulletpoints.map((point, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="text-gray-400 text-[13px] w-6">{index + 1}.</span>
+                    <span className="text-neutral-500 text-[13px] w-6">{index + 1}.</span>
                     <Input
                       value={point}
                       onChange={(e) => updateBulletpoint(index, e.target.value)}
                       placeholder={`Punkt ${index + 1}...`}
-                      className="flex-1 h-10 text-[13px] bg-gray-50/50 border-gray-200 focus:bg-white"
+                      className="flex-1 h-10 text-[13px] bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700"
                     />
                     <button
                       onClick={() => removeBulletpoint(index)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -887,33 +880,33 @@ export function YouTubePostForm() {
           >
             {/* Videos */}
             <div className="space-y-4">
-              <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+              <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                 Aufgenommene Video-Links
               </label>
               
               <div className="space-y-2">
                 {videoLinks.map((link, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    <span className="text-gray-400 text-[12px] w-8">Clip {index + 1}</span>
+                    <span className="text-neutral-500 text-[12px] w-8">Clip {index + 1}</span>
                     <Input
                       value={link}
                       onChange={(e) => updateVideoLink(index, e.target.value)}
                       placeholder="https://loom.com/... oder Drive-Link"
-                      className="flex-1 h-10 text-[13px] bg-gray-50/50 border-gray-200 focus:bg-white"
+                      className="flex-1 h-10 text-[13px] bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700"
                     />
                     {link && (
                       <a
                         href={link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-neutral-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </a>
                     )}
                     <button
                       onClick={() => removeVideoLink(index)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -933,27 +926,27 @@ export function YouTubePostForm() {
             </div>
 
             {/* Beschreibung */}
-            <div className="pt-4 border-t border-gray-100 space-y-4">
+            <div className="pt-4 border-t border-neutral-800 space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     YouTube Beschreibung
                   </label>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-[11px] text-neutral-500">
                     {description.length} Zeichen
                   </span>
                 </div>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="min-h-[400px] text-[12px] font-mono bg-gray-50/50 border-gray-200 focus:bg-white transition-colors resize-none leading-relaxed"
+                  className="min-h-[400px] text-[12px] font-mono bg-neutral-800/50/50 border-neutral-700 focus:bg-neutral-700 transition-colors resize-none leading-relaxed"
                 />
               </div>
               
               {/* Affiliate Links Quick Insert */}
               {affiliateLinks.length > 0 && (
                 <div className="space-y-2">
-                  <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+                  <label className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider">
                     Affiliate Links einfügen
                   </label>
                   <div className="flex flex-wrap gap-2">

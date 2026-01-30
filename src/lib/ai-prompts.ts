@@ -1,5 +1,8 @@
 import type { Post, PlatformId } from './types'
 import { buildContextForPlatform, buildCurrentPostContext } from './ai-context'
+import { buildLearningsContext } from '@/stores/learningsStore'
+import { buildPatternContext, generateNextPostRecommendations } from './pattern-recognition'
+import { analyzeWritingStyle, buildStylePrompt } from './style-analyzer'
 
 // Platform-specific best practices
 const PLATFORM_BEST_PRACTICES: Record<PlatformId, string> = {
@@ -117,39 +120,56 @@ export function buildSystemPrompt(
     skool: 'Skool'
   }[platform]
   
-  const learningsContext = buildContextForPlatform(allPosts, platform)
+  const postsContext = buildContextForPlatform(allPosts, platform)
   const currentPostContext = buildCurrentPostContext(currentPost)
   const bestPractices = PLATFORM_BEST_PRACTICES[platform]
+  const learningsContext = buildLearningsContext(platform)
+  const patternContext = buildPatternContext(allPosts, platform)
+  const recommendations = generateNextPostRecommendations(allPosts, platform)
   
-  return `Du bist ein erfahrener ${platformName} Content-Stratege und Copywriter. Du hilfst beim Erstellen und Optimieren von ${platformName}-Content.
+  // Analyse Schreibstil aus Winner-Posts
+  const styleAnalysis = analyzeWritingStyle(allPosts, platform)
+  const stylePrompt = styleAnalysis ? buildStylePrompt(styleAnalysis) : ''
+  
+  return `Du bist der persönliche Ghostwriter dieses Users. Du schreibst EXAKT in seinem Stil.
 
 # Deine Rolle
-- Du analysierst Posts und gibst konstruktives Feedback
-- Du schlägst Verbesserungen vor basierend auf bewährten Mustern
-- Du hilfst beim Brainstormen von Ideen
+- Du bist KEIN generischer AI-Assistent - du bist sein persönlicher Ghostwriter
+- Du kennst seinen Schreibstil, seine Tonalität, seine Struktur
+- Wenn du Posts schreibst, sollen sie sich EXAKT wie er anhören
+- Du analysierst und optimierst basierend auf SEINEN Daten
 - Du schreibst auf Deutsch, es sei denn der User schreibt auf Englisch
 
 # Kommunikationsstil
 - Direkt und konkret - keine vagen Ratschläge
-- Zeige konkrete Beispiele wenn möglich
-- Frage nach wenn du mehr Kontext brauchst
-- Sei ehrlich aber konstruktiv bei Kritik
+- Zeige konkrete Beispiele aus SEINEN Posts
+- Referenziere seine Learnings ("In deinem Post über X hat funktioniert...")
+- Nenne konkrete Zahlen ("Deine Statistik-Hooks performen 40% besser")
+- Wenn du Posts schreibst: Schreibe sie FERTIG, nicht als Gerüst
+
+${stylePrompt}
 
 ${bestPractices}
 
+${postsContext}
 ${learningsContext}
+${patternContext}
+
+## 🎯 Personalisierte Empfehlungen für diesen User:
+${recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
 ${currentPostContext}
 
-# Wichtig
-- Basiere deine Empfehlungen auf den erkannten Mustern aus den bisherigen Posts
-- Berücksichtige was bei diesem Nutzer gut funktioniert hat
-- Wenn der aktuelle Entwurf leer ist, hilf beim Brainstormen
-- Wenn bereits Text vorhanden ist, gib spezifisches Feedback`
+# WICHTIG - DU BIST SEIN GHOSTWRITER!
+- Schreibe in SEINEM Stil, nicht in einem generischen AI-Stil
+- Nutze seine Formulierungen, seine Struktur, seine Emojis (oder keine)
+- Bei leerem Entwurf: Frag nach der Idee und schreibe dann einen KOMPLETTEN Post
+- Der Output soll sofort veröffentlicht werden können
+- NIEMALS generische Platzhalter wie "[Hier einfügen]" oder "..." verwenden`
 }
 
 // Initial greeting message based on post state
-export function getInitialGreeting(platform: PlatformId, currentPost: Post): string {
+export function getInitialGreeting(platform: PlatformId, currentPost: Post, hasStyleData: boolean = false): string {
   const platformName = {
     linkedin: 'LinkedIn',
     youtube: 'YouTube',
@@ -173,24 +193,28 @@ export function getInitialGreeting(platform: PlatformId, currentPost: Post): str
   })()
   
   if (hasContent) {
-    return `Ich sehe deinen ${platformName}-Entwurf. Wie kann ich dir helfen? Ich kann:
+    return `Ich sehe deinen ${platformName}-Entwurf. ${hasStyleData ? 'Ich kenne deinen Schreibstil aus deinen Winner-Posts.' : ''} 
 
-• **Feedback geben** - Analyse von Hook, Struktur, CTA
-• **Optimieren** - Konkrete Verbesserungsvorschläge  
-• **Alternativen** - Verschiedene Varianten vorschlagen
+Wie kann ich helfen?
+
+• **Optimieren** - In deinem Stil verbessern
+• **Umschreiben** - Komplett neu in deinem Stil
+• **Alternativen** - Verschiedene Hook-Varianten
 
 Was möchtest du?`
   }
   
-  return `Lass uns einen starken ${platformName}-Post erstellen! 
+  const styleInfo = hasStyleData 
+    ? `Ich kenne deinen Schreibstil aus deinen erfolgreichen Posts. Sag mir einfach deine Idee und ich schreibe den **kompletten Post** in deinem Stil.`
+    : `Ich lerne deinen Stil aus deinen Posts. Je mehr Winner-Posts du markierst, desto besser werde ich.`
+  
+  return `${styleInfo}
 
-Ich kenne deine bisherigen Posts und weiß was bei dir funktioniert. Sag mir:
+**Was hast du vor?**
 
-• **Thema** - Worüber möchtest du schreiben?
-• **Ziel** - Was soll der Post erreichen?
-• **Format** - Hast du schon eine Idee für die Struktur?
+Beschreib mir deine Idee in 1-2 Sätzen und ich schreibe den Post für dich - fertig zum Veröffentlichen.
 
-Oder beschreib einfach deine Idee und ich helfe dir beim Ausarbeiten.`
+*Beispiel: "Ein Post darüber, warum die meisten LinkedIn-Profile langweilig sind und wie man es besser macht"*`
 }
 
 // Generate learning analysis for a post

@@ -63,7 +63,7 @@ export function TagSelect({ value, onValueChange, className }: TagSelectProps) {
             <Button
               variant="outline"
               size="sm"
-              className="h-6 px-2 text-[11px] text-gray-500"
+              className="h-6 px-2 text-[11px]"
             >
               <Plus className="h-3 w-3 mr-1" />
               Tag
@@ -78,10 +78,10 @@ export function TagSelect({ value, onValueChange, className }: TagSelectProps) {
                     key={tag.id}
                     onClick={() => toggleTag(tag.id)}
                     className={cn(
-                      "w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-[12px] transition-colors",
+                      "w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs transition-colors",
                       isSelected 
                         ? cn(tag.bgColor, tag.color) 
-                        : "hover:bg-gray-100 text-gray-700"
+                        : "hover:bg-neutral-800 text-neutral-300"
                     )}
                   >
                     {tag.name}

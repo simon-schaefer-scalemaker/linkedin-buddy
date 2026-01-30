@@ -44,7 +44,6 @@ export function PostSidebar({
   scheduledFor,
   createdAt,
   updatedAt,
-  publishedAt,
   post,
   performanceRating,
   learning,
@@ -69,8 +68,8 @@ export function PostSidebar({
           <div className="flex items-center gap-3">
             <PlatformIcon platform={platform} showBackground size="md" />
             <div>
-              <p className="text-[14px] font-medium text-gray-900">{platformData.name}</p>
-              <p className="text-[12px] text-gray-400">Post Editor</p>
+              <p className="text-[14px] font-medium text-white">{platformData.name}</p>
+              <p className="text-[12px] text-neutral-500">Post Editor</p>
             </div>
           </div>
         </CardContent>
@@ -109,7 +108,7 @@ export function PostSidebar({
         </CardHeader>
         <CardContent className="pt-0 space-y-3">
           <div>
-            <Label className="text-[12px] text-gray-500">Geplant für</Label>
+            <Label className="text-[12px] text-neutral-500">Geplant für</Label>
             <DateTimePicker
               date={scheduledFor ? new Date(scheduledFor) : undefined}
               onSelect={onScheduledForChange}
@@ -141,7 +140,7 @@ export function PostSidebar({
           <CardContent className="pt-0 space-y-4">
             {/* Winner/Loser Rating */}
             <div className="space-y-2">
-              <Label className="text-[12px] text-gray-500">Performance-Bewertung</Label>
+              <Label className="text-[12px] text-neutral-500">Performance-Bewertung</Label>
               <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => onPerformanceRatingChange?.('winner')}
@@ -149,7 +148,7 @@ export function PostSidebar({
                     "flex flex-col items-center gap-1 p-2.5 rounded-lg border-2 transition-all text-[11px] font-medium",
                     performanceRating === 'winner'
                       ? "bg-green-50 border-green-300 text-green-700"
-                      : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-500 hover:border-neutral-600"
                   )}
                 >
                   <Trophy className="h-4 w-4" />
@@ -160,8 +159,8 @@ export function PostSidebar({
                   className={cn(
                     "flex flex-col items-center gap-1 p-2.5 rounded-lg border-2 transition-all text-[11px] font-medium",
                     performanceRating === 'average'
-                      ? "bg-gray-100 border-gray-300 text-gray-700"
-                      : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                      ? "bg-neutral-800 border-neutral-600 text-neutral-300"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-500 hover:border-neutral-600"
                   )}
                 >
                   <Minus className="h-4 w-4" />
@@ -173,7 +172,7 @@ export function PostSidebar({
                     "flex flex-col items-center gap-1 p-2.5 rounded-lg border-2 transition-all text-[11px] font-medium",
                     performanceRating === 'loser'
                       ? "bg-red-50 border-red-300 text-red-700"
-                      : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-500 hover:border-neutral-600"
                   )}
                 >
                   <TrendingDown className="h-4 w-4" />
@@ -185,7 +184,7 @@ export function PostSidebar({
             {/* Learning Field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="text-[12px] text-gray-500">
+                <Label className="text-[12px] text-neutral-500">
                   Learning: Was hat {performanceRating === 'winner' ? 'funktioniert' : performanceRating === 'loser' ? 'nicht funktioniert' : 'du gelernt'}?
                 </Label>
                 {performanceRating && onGenerateLearning && (
@@ -245,14 +244,14 @@ export function PostSidebar({
         </CardHeader>
         <CardContent className="pt-0 space-y-2">
           <div className="flex justify-between text-[12px]">
-            <span className="text-gray-400">Erstellt</span>
-            <span className="text-gray-600">
+            <span className="text-neutral-500">Erstellt</span>
+            <span className="text-neutral-400">
               {format(new Date(createdAt), "d. MMM yyyy, HH:mm", { locale: de })}
             </span>
           </div>
           <div className="flex justify-between text-[12px]">
-            <span className="text-gray-400">Aktualisiert</span>
-            <span className="text-gray-600">
+            <span className="text-neutral-500">Aktualisiert</span>
+            <span className="text-neutral-400">
               {format(new Date(updatedAt), "d. MMM yyyy, HH:mm", { locale: de })}
             </span>
           </div>
